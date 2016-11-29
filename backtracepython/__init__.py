@@ -3,9 +3,16 @@ import math
 import socket
 import sys
 import time
-import urllib.parse
-import urllib.request
 import uuid
+
+if sys.version_info.major >= 3:
+    from urllib.parse import urlencode
+    from urllib.request import Request
+    from urllib.request import urlopen
+else:
+    from urllib import urlencode
+    from urllib2 import urlopen
+    from urllib2 import Request
 
 __all__ = ["BacktraceReport", "initialize", "version", "version_string"]
 
@@ -38,6 +45,19 @@ def get_python_version():
         sys.version_info.micro,
         sys.version_info.releaselevel)
 
+def post_json(endpoint, path, query, obj):
+    payload = json.dumps(obj).encode('utf-8')
+    query = urlencode(query)
+    headers = {
+        'Content-Type': "application/json",
+        'Content-Length': len(payload),
+    }
+    full_url = "{}/post?{}".format(globs.endpoint, query)
+    req = Request(full_url, payload, headers)
+    with urlopen(req) as resp:
+        if resp.code != 200:
+            raise Exception(resp.code, resp.read())
+
 def create_and_send_report(ex_value, ex_traceback):
     report = {
         'uuid': str(uuid.uuid4()),
@@ -53,20 +73,11 @@ def create_and_send_report(ex_value, ex_traceback):
             'error.message': "\n".join(ex_value.args),
         },
     }
-    payload = json.dumps(report).encode('utf-8')
-    query = urllib.parse.urlencode({
+    query = {
         'token': globs.token,
         'format': "json",
-    })
-    headers = {
-        'Content-Type': "application/json",
-        'Content-Length': len(payload),
     }
-    full_url = "{}/post?{}".format(globs.endpoint, query)
-    req = urllib.request.Request(full_url, payload, headers, method='POST')
-    with urllib.request.urlopen(req) as resp:
-        if resp.code != 200:
-            raise Exception(resp.code, resp.read())
+    post_json(globs.endpoint, "/post", query, report)
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):
     if globs.debug_backtrace:

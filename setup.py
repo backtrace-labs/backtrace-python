@@ -5,7 +5,7 @@ from setuptools import setup
 import backtracepython
 
 setup(
-    name='BacktracePython',
+    name='backtracepython',
     version=backtracepython.version_string,
     description='Backtrace error reporting tool for Python',
     author='Andrew Kelley',

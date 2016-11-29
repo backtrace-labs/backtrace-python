@@ -1,9 +1,15 @@
-import http.server
 import json
 import os
 import subprocess
 import sys
 import unittest
+
+if sys.version_info.major >= 3:
+    from http.server import HTTPServer
+    from http.server import BaseHTTPRequestHandler
+else:
+    from BaseHTTPServer import HTTPServer
+    from BaseHTTPServer import BaseHTTPRequestHandler
 
 tests_dir = os.path.dirname(os.path.realpath(__file__))
 exe_dir = os.path.join(tests_dir, "exe")
@@ -21,7 +27,7 @@ def run_one_test(check_fn, exe_name):
     class non_local:
         json_object = None
 
-    class RequestHandler(http.server.BaseHTTPRequestHandler):
+    class RequestHandler(BaseHTTPRequestHandler):
         def do_POST(self):
             self.send_response(200)
             self.end_headers()
@@ -32,17 +38,20 @@ def run_one_test(check_fn, exe_name):
         def log_message(self, format, *args):
             pass
 
-    httpd = http.server.HTTPServer(requested_server_address, RequestHandler)
+    httpd = HTTPServer(requested_server_address, RequestHandler)
     host, port = httpd.server_address
 
     exe_path = os.path.join(exe_dir, exe_name)
-    stdio_action = None if debug_backtrace else subprocess.DEVNULL
+    stdio_action = None if debug_backtrace else subprocess.PIPE
     child = subprocess.Popen([sys.executable, exe_path, host, str(port)],
         stdout=stdio_action, stderr=stdio_action)
 
     httpd.handle_request()
     check_fn(non_local.json_object)
     child.wait()
+    if stdio_action is not None:
+        child.stdout.close()
+        child.stderr.close()
     httpd.server_close()
     
 
