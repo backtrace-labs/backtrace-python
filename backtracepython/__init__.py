@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import math
 import socket
@@ -32,7 +33,7 @@ version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
 process_start_time = time.time()
 
 def get_process_age():
-    return math.floor(time.time() - process_start_time)
+    return int(time.time() - process_start_time)
 
 class BacktraceReport:
     def __init__(self):
@@ -45,7 +46,12 @@ def get_python_version():
         sys.version_info.micro,
         sys.version_info.releaselevel)
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 def post_json(endpoint, path, query, obj):
+    if globs.debug_backtrace:
+        eprint(json.dumps(obj, indent=2))
     payload = json.dumps(obj).encode('utf-8')
     query = urlencode(query)
     headers = {
@@ -61,7 +67,7 @@ def post_json(endpoint, path, query, obj):
 def create_and_send_report(ex_value, ex_traceback):
     report = {
         'uuid': str(uuid.uuid4()),
-        'timestamp': math.floor(time.time()),
+        'timestamp': int(time.time()),
         'lang': "python",
         'langVersion': get_python_version(),
         'agent': "backtrace-python",
