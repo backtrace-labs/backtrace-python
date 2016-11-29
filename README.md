@@ -19,7 +19,7 @@ bt.initialize(
  * Python >= 2.7.12 or Python >= 3.5.2
 
 ```
-python -m pip install BacktracePython
+python -m pip install backtracepython
 ```
 
 ## Contributing
