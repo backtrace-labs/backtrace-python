@@ -19,7 +19,35 @@ def check_basic_report(obj):
     assert obj['lang'] == "python"
     assert obj['agent'] == "backtrace-python"
     assert obj['classifiers'][0] == "NameError"
-    assert obj['attributes']['error.message'] == "name 'b' is not defined"
+
+    if obj['langVersion'].startswith("PyPy"):
+        assert obj['attributes']['error.message'] == "global name 'b' is not defined"
+    else:
+        assert obj['attributes']['error.message'] == "name 'b' is not defined"
+
+    source_code_id = obj['threads'][obj['mainThread']]['stack'][0]['sourceCode']
+    assert obj['sourceCode'][source_code_id]['path'].endswith("tests/exe/simple_report.py")
+    assert obj['sourceCode'][source_code_id]['text'].endswith("\na = b\n")
+
+def check_multi_file(obj):
+    if sys.version_info.major >= 3:
+        assert obj['classifiers'][0] == "JSONDecodeError"
+        assert obj['attributes']['error.message'] == "Expecting value: line 1 column 1 (char 0)"
+    elif obj['langVersion'].startswith("PyPy"):
+        assert obj['classifiers'][0] == "ValueError"
+        assert obj['attributes']['error.message'] == "Error when decoding true at char 1"
+    else:
+        assert obj['classifiers'][0] == "ValueError"
+        assert obj['attributes']['error.message'] == "No JSON object could be decoded"
+
+    fault_stack = obj['threads'][obj['mainThread']]['stack']
+    source_code_id = fault_stack[-1]['sourceCode']
+    assert obj['sourceCode'][source_code_id]['path'].endswith("tests/exe/multi_file.py")
+    lines = obj['sourceCode'][source_code_id]['text'].split("\n")
+    assert lines[fault_stack[-1]['line'] - 1] == 'call_a_file(True)'
+
+    assert fault_stack[-6]['funcName'] == "bar"
+    assert fault_stack[-6]['line'] == 4
 
 def run_one_test(check_fn, exe_name):
     requested_server_address = ("127.0.0.1", 0)
@@ -58,3 +86,6 @@ def run_one_test(check_fn, exe_name):
 class TestErrorReports(unittest.TestCase):
     def test_basic_report(self):
         run_one_test(check_basic_report, "simple_report.py")
+
+    def test_multi_file(self):
+        run_one_test(check_multi_file, "multi_file.py")

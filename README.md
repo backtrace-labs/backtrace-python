@@ -30,5 +30,9 @@ To run the test suite:
 python setup.py test
 ```
 
-Be sure to run the test suite with both Python 2 and Python 3 since both are
-supported simultaneously.
+Since all of these implementations of Python are supported, be sure to run the
+test suite with all of them:
+
+ * Python 2
+ * Python 3
+ * PyPy
