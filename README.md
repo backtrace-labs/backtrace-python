@@ -16,7 +16,7 @@ bt.initialize(
 
 ### Requirements
 
- * Python >= 2.7.12 or Python >= 3.5.2
+This module supports Python 2, Python 3, and PyPy.
 
 ```
 python -m pip install backtracepython
