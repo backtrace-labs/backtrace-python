@@ -215,6 +215,7 @@ def initialize(**kwargs):
     globs.timeout = kwargs.get('timeout', 4)
     globs.tab_width = kwargs.get('tab_width', 8)
     globs.attributes = kwargs.get('attributes', {})
-
-    globs.next_except_hook = sys.excepthook
-    sys.excepthook = bt_except_hook
+    disable_global_handler = kwargs.get('disable_global_handler', False)
+    if not disable_global_handler:
+        globs.next_except_hook = sys.excepthook
+        sys.excepthook = bt_except_hook

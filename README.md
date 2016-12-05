@@ -63,7 +63,6 @@ stderr.
 
 ##### `disable_global_handler`
 
-TODO
 Defaults to `false`. If this is `false`, this module will insert itself
 in the `sys.excepthook` chain and report those errors automatically
 before re-raising the exception.
