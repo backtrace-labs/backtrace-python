@@ -1,24 +1,15 @@
-from __future__ import print_function
 import json
 import math
 import os
 import platform
 import socket
+import subprocess
 import sys
 import threading
 import time
 import uuid
 
-if sys.version_info.major >= 3:
-    from urllib.parse import urlencode
-    from urllib.request import Request
-    from urllib.request import urlopen
-else:
-    from urllib import urlencode
-    from urllib2 import urlopen
-    from urllib2 import Request
-
-__all__ = ["BacktraceReport", "initialize", "version", "version_string"]
+__all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string"]
 
 class version:
     major = 0
@@ -36,9 +27,11 @@ class globs:
     tab_width = None
     attributes = None
     context_line_count = None
+    worker = None
     next_source_code_id = 0
 
 process_start_time = time.time()
+child_py_path = os.path.join(os.path.dirname(__file__), "child.py")
 
 def get_process_age():
     return int(time.time() - process_start_time)
@@ -51,23 +44,10 @@ def get_python_version():
         sys.version_info.micro,
         sys.version_info.releaselevel)
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-def post_json(endpoint, path, query, obj):
-    if globs.debug_backtrace:
-        eprint(json.dumps(obj, indent=2))
-    payload = json.dumps(obj).encode('utf-8')
-    query = urlencode(query)
-    headers = {
-        'Content-Type': "application/json",
-        'Content-Length': len(payload),
-    }
-    full_url = "{}/post?{}".format(globs.endpoint, query)
-    req = Request(full_url, payload, headers)
-    with urlopen(req) as resp:
-        if resp.code != 200:
-            raise Exception(resp.code, resp.read())
+def send_worker_msg(msg):
+    payload = json.dumps(msg).encode('utf-8')
+    globs.worker.stdin.write(payload)
+    globs.worker.stdin.flush()
 
 def walk_tb_backwards(tb):
     while tb is not None:
@@ -82,43 +62,31 @@ def make_unique_source_code_id():
     globs.next_source_code_id += 1
     return result
 
-def read_file_or_none(file_path):
+def add_source_code(source_path, source_code_dict, source_path_dict, line):
     try:
-        with open(file_path) as f:
-            return f.read()
-    except:
-        return None
-
-def create_source_object(source_path):
-    ext = os.path.splitext(source_path)[1]
-    if ext == ".py":
-        text = read_file_or_none(source_path)
-        if text is not None:
-            return {
-                'text': text,
-                'startLine': 1,
-                'startColumn': 1,
-                'startPos': 0,
-                'path': source_path,
-                'tabWidth': globs.tab_width,
-            }
-    return { 'path': source_path }
-
-def add_source_code(source_path, source_code_dict, source_path_dict):
-    try:
-        return source_path_dict[source_path]
+        the_id = source_path_dict[source_path]
     except KeyError:
         the_id = make_unique_source_code_id()
         source_path_dict[source_path] = the_id
-        source_code_dict[the_id] = create_source_object(source_path)
+        source_code_dict[the_id] = {
+            'minLine': line,
+            'maxLine': line,
+            'path': source_path,
+        }
         return the_id
+
+    if line < source_code_dict[the_id]['minLine']:
+        source_code_dict[the_id]['minLine'] = line
+    if line > source_code_dict[the_id]['maxLine']:
+        source_code_dict[the_id]['maxLine'] = line
+    return the_id
 
 def process_frame(tb_frame, line, source_code_dict, source_path_dict):
     source_file = os.path.abspath(tb_frame.f_code.co_filename)
     frame = {
         'funcName': tb_frame.f_code.co_name,
         'line': line,
-        'sourceCode': add_source_code(source_file, source_code_dict, source_path_dict),
+        'sourceCode': add_source_code(source_file, source_code_dict, source_path_dict, line),
     }
     return frame
 
@@ -143,7 +111,7 @@ class BacktraceReport:
         entry_path = os.path.abspath(__main__.__file__)
         cwd_path = os.path.abspath(os.getcwd())
         entry_thread = get_main_thread()
-        entry_source_code_id = add_source_code(entry_path, self.source_code, self.source_path_dict)
+        entry_source_code_id = add_source_code(entry_path, self.source_code, self.source_path_dict, 1)
 
         init_attrs = {
             'hostname': socket.gethostname(),
@@ -165,7 +133,6 @@ class BacktraceReport:
             'entrySourceCode': entry_source_code_id,
             'cwd': cwd_path,
             'attributes': init_attrs,
-            'sourceCode': self.source_code,
             'annotations': {
                 'Environment Variables': dict(os.environ),
             },
@@ -211,11 +178,17 @@ class BacktraceReport:
     def send(self):
         if len(self.log_lines) != 0 and 'Log' not in self.report['annotations']:
             self.report['annotations']['Log'] = self.log_lines
-        query = {
+        send_worker_msg({
+            'id': 'send',
+            'report': self.report,
+            'context_line_count': globs.context_line_count,
+            'timeout': globs.timeout,
             'token': globs.token,
-            'format': "json",
-        }
-        post_json(globs.endpoint, "/post", query, self.report)
+            'endpoint': globs.endpoint,
+            'tab_width': globs.tab_width,
+            'debug_backtrace': globs.debug_backtrace,
+            'source_code': self.source_code,
+        })
 
 def create_and_send_report(ex_type, ex_value, ex_traceback):
     report = BacktraceReport()
@@ -251,7 +224,19 @@ def initialize(**kwargs):
     globs.tab_width = kwargs.get('tab_width', 8)
     globs.attributes = kwargs.get('attributes', {})
     globs.context_line_count = kwargs.get('context_line_count', 200)
+
+    stdio_value = None if globs.debug_backtrace else subprocess.PIPE
+    globs.worker = subprocess.Popen([sys.executable, child_py_path],
+        stdin=subprocess.PIPE, stdout=stdio_value, stderr=stdio_value)
+
     disable_global_handler = kwargs.get('disable_global_handler', False)
     if not disable_global_handler:
         globs.next_except_hook = sys.excepthook
         sys.excepthook = bt_except_hook
+
+def finalize():
+    send_worker_msg({ 'id': 'terminate' })
+    if not globs.debug_backtrace:
+        globs.worker.stdout.close()
+        globs.worker.stderr.close()
+    globs.worker.wait()

@@ -72,7 +72,6 @@ reports will be reported is if you manually create and send them.
 
 ##### `context_line_count`
 
-TODO
 Defaults to `200`. When an error is reported, this many lines above and below
 each stack function are included in the report.
 
