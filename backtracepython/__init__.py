@@ -18,7 +18,7 @@ else:
     from urllib2 import urlopen
     from urllib2 import Request
 
-__all__ = ["BacktraceReport", "initialize", "version", "version_string", "create_report"]
+__all__ = ["BacktraceReport", "initialize", "version", "version_string"]
 
 class version:
     major = 0
