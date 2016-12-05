@@ -39,7 +39,7 @@ report.
 
 Optional. Dictionary that contains additional attributes to be sent along with
 every error report. These can be overridden on an individual report with
-`report.addAttribute`.
+`report.set_attribute`.
 
 Example:
 
@@ -83,53 +83,49 @@ how many spaces they should be indented to correctly display the source code.
 Therefore the error report can override this number to specify how many spaces
 a hard tab should be represented by when viewing source code.
 
-### bt.createReport()
+### `bt.BacktraceReport`
 
-TODO
 Create a report object that you can later choose whether or not to send.
 
 This may be useful to track something like a request.
 
-Returns a `BacktraceReport`.
+#### `report.set_attribute(key, value)`
 
-### bt.BacktraceReport
-
-Create a `BacktraceReport` object with `bt.createReport`.
-
-#### report.addAttribute(key, value)
-
-TODO
 Adds an attribute to a specific report. Valid types for `value` are
 `str`, `float`, `int`, and `bool`.
 
 Attributes are indexed and searchable. See also `addAnnotation`.
 
-#### report.addDictAttributes(dict)
+#### `report.set_dict_attributes(dict)`
 
-TODO
-Adds all key-value pairs of `dict` into the report recursively. For example:
+Adds all key-value pairs of `dict` into the report recursively.
 
-#### report.setError(ExceptionType, exception, traceback)
+#### `report.set_annotation(key, value)`
 
-TODO
+Adds an annotation to a specific report. Annotations, unlike attributes, are
+not indexed and searchable. However, they are available for inspection when
+you view a specific report.
+
+ * `key` - String which is the name of the annotation.
+ * `value` - Any type which is JSON-serializable.
+
+#### `report.set_exception(ExceptionType, exception, traceback)`
+
 `error` is an Error object. Backtrace will extract information from this object
 such as the error message and stack trace and send this information along with
 the report.
 
-#### report.captureLastException()
+#### `report.capture_last_exception()`
 
-TODO
-This is the same as `report.setError(*sys.exc_info())`
+This is the same as `report.set_exception(*sys.exc_info())`
 
-#### report.log(line)
+#### `report.log(line)`
 
-TODO
 Adds a timestamped log message to the report. Log output is available when you
 view a report.
 
-#### report.send()
+#### `report.send()`
 
-TODO
 Sends the error report to the endpoint specified in `initialize`.
 
 ## Installation

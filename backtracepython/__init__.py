@@ -18,7 +18,7 @@ else:
     from urllib2 import urlopen
     from urllib2 import Request
 
-__all__ = ["BacktraceReport", "initialize", "version", "version_string"]
+__all__ = ["BacktraceReport", "initialize", "version", "version_string", "create_report"]
 
 class version:
     major = 0
@@ -35,16 +35,13 @@ class globs:
     timeout = None
     tab_width = None
     attributes = None
+    context_line_count = None
     next_source_code_id = 0
 
 process_start_time = time.time()
 
 def get_process_age():
     return int(time.time() - process_start_time)
-
-class BacktraceReport:
-    def __init__(self):
-        pass
 
 def get_python_version():
     return "{} {}.{}.{}-{}".format(
@@ -136,56 +133,94 @@ def get_main_thread():
             first = thread
     return first
 
-def create_and_send_report(ex_value, ex_traceback):
-    import __main__
-    entry_path = os.path.abspath(__main__.__file__)
-    cwd_path = os.path.abspath(os.getcwd())
-    fault_thread = threading.current_thread()
-    entry_thread = get_main_thread()
-    source_code = {}
-    source_path_dict = {}
-    entry_source_code_id = add_source_code(entry_path, source_code, source_path_dict)
-    threads = {}
-    for thread in threading.enumerate():
-        if thread.ident == fault_thread.ident:
-            threads[str(fault_thread.ident)] = {
-                'name': fault_thread.name,
-                'stack': [process_frame(frame, line, source_code,
-                    source_path_dict) for frame, line in walk_tb(ex_traceback)],
-            }
-        else:
-            threads[str(thread.ident)] = {
-                'name': thread.name,
-            }
+class BacktraceReport:
+    def __init__(self):
+        self.fault_thread = threading.current_thread()
+        self.source_code = {}
+        self.source_path_dict = {}
 
-    init_attrs = {
-        'hostname': socket.gethostname(),
-        'process.age': get_process_age(),
-        'error.message': "\n".join(ex_value.args),
-    }
-    init_attrs.update(globs.attributes)
+        import __main__
+        entry_path = os.path.abspath(__main__.__file__)
+        cwd_path = os.path.abspath(os.getcwd())
+        entry_thread = get_main_thread()
+        entry_source_code_id = add_source_code(entry_path, self.source_code, self.source_path_dict)
 
-    report = {
-        'uuid': str(uuid.uuid4()),
-        'timestamp': int(time.time()),
-        'lang': "python",
-        'langVersion': get_python_version(),
-        'agent': "backtrace-python",
-        'agentVersion': version_string,
-        'classifiers': [ex_value.__class__.__name__],
-        'threads': threads,
-        'mainThread': str(fault_thread.ident),
-        'entryThread': str(entry_thread.ident),
-        'entrySourceCode': entry_source_code_id,
-        'cwd': cwd_path,
-        'attributes': init_attrs,
-        'sourceCode': source_code,
-    }
-    query = {
-        'token': globs.token,
-        'format': "json",
-    }
-    post_json(globs.endpoint, "/post", query, report)
+        init_attrs = {
+            'hostname': socket.gethostname(),
+            'process.age': get_process_age(),
+        }
+        init_attrs.update(globs.attributes)
+
+        self.log_lines = []
+
+        self.report = {
+            'uuid': str(uuid.uuid4()),
+            'timestamp': int(time.time()),
+            'lang': "python",
+            'langVersion': get_python_version(),
+            'agent': "backtrace-python",
+            'agentVersion': version_string,
+            'mainThread': str(self.fault_thread.ident),
+            'entryThread': str(entry_thread.ident),
+            'entrySourceCode': entry_source_code_id,
+            'cwd': cwd_path,
+            'attributes': init_attrs,
+            'sourceCode': self.source_code,
+            'annotations': {
+                'Environment Variables': dict(os.environ),
+            },
+        }
+
+    def set_exception(self, garbage, ex_value, ex_traceback):
+        self.report['classifiers'] = [ex_value.__class__.__name__]
+        self.report['attributes']['error.message'] = "\n".join(ex_value.args)
+
+        threads = {}
+        for thread in threading.enumerate():
+            if thread.ident == self.fault_thread.ident:
+                threads[str(self.fault_thread.ident)] = {
+                    'name': self.fault_thread.name,
+                    'stack': [process_frame(frame, line, self.source_code,
+                        self.source_path_dict) for frame, line in walk_tb(ex_traceback)],
+                }
+            else:
+                threads[str(thread.ident)] = {
+                    'name': thread.name,
+                }
+
+        self.report['threads'] = threads
+
+    def capture_last_exception(self):
+        self.set_exception(*sys.exc_info())
+
+    def set_attribute(self, key, value):
+        self.report['attributes'][key] = value
+
+    def set_dict_attributes(self, target_dict):
+        self.report['attributes'].update(target_dict)
+
+    def set_annotation(self, key, value):
+        self.report['annotations'][key] = value
+
+    def log(self, line):
+        self.log_lines.append({
+            'ts': time.time(),
+            'msg': line,
+        })
+
+    def send(self):
+        if len(self.log_lines) != 0 and 'Log' not in self.report['annotations']:
+            self.report['annotations']['Log'] = self.log_lines
+        query = {
+            'token': globs.token,
+            'format': "json",
+        }
+        post_json(globs.endpoint, "/post", query, self.report)
+
+def create_and_send_report(ex_type, ex_value, ex_traceback):
+    report = BacktraceReport()
+    report.set_exception(ex_type, ex_value, ex_traceback)
+    report.send()
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):
     if globs.debug_backtrace:
@@ -193,7 +228,7 @@ def bt_except_hook(ex_type, ex_value, ex_traceback):
         sys.excepthook = globs.next_except_hook
 
         # Now if this fails we'll get a normal exception.
-        create_and_send_report(ex_value, ex_traceback)
+        create_and_send_report(ex_type, ex_value, ex_traceback)
 
         # Put our exception handler back in place, and then also
         # pass the exception down the chain.
@@ -201,7 +236,7 @@ def bt_except_hook(ex_type, ex_value, ex_traceback):
     else:
         # Failure here is silent.
         try:
-            create_and_send_report(ex_value, ex_traceback)
+            create_and_send_report(ex_type, ex_value, ex_traceback)
         except:
             pass
 
@@ -215,6 +250,7 @@ def initialize(**kwargs):
     globs.timeout = kwargs.get('timeout', 4)
     globs.tab_width = kwargs.get('tab_width', 8)
     globs.attributes = kwargs.get('attributes', {})
+    globs.context_line_count = kwargs.get('context_line_count', 200)
     disable_global_handler = kwargs.get('disable_global_handler', False)
     if not disable_global_handler:
         globs.next_except_hook = sys.excepthook
