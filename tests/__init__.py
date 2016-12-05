@@ -29,6 +29,9 @@ def check_basic_report(obj):
     assert obj['sourceCode'][source_code_id]['path'].endswith("tests/exe/simple_report.py")
     assert obj['sourceCode'][source_code_id]['text'].endswith("\na = b\n")
 
+    assert obj['attributes']['a'] == 1
+    assert obj['attributes']['b'] == "bar"
+
 def check_multi_file(obj):
     if sys.version_info.major >= 3:
         assert obj['classifiers'][0] == "JSONDecodeError"

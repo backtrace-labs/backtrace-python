@@ -12,6 +12,127 @@ bt.initialize(
 )
 ```
 
+## Documentation
+
+### initialize
+
+#### Arguments
+
+##### `endpoint`
+
+Required.
+
+Example: `https://backtrace.example.com:1234`.
+
+Sets the HTTP/HTTPS endpoint that error reports will be sent to.
+
+##### `token`
+
+Required.
+
+Example: `51cc8e69c5b62fa8c72dc963e730f1e8eacbd243aeafc35d08d05ded9a024121`.
+
+Sets the token that will be used for authentication when sending an error
+report.
+
+##### `attributes`
+
+Optional. Dictionary that contains additional attributes to be sent along with
+every error report. These can be overridden on an individual report with
+`report.addAttribute`.
+
+Example:
+
+```
+{
+  'application': "ApplicationName",
+  'serverId': "foo",
+}
+```
+
+##### `timeout`
+
+Defaults to `4`. Maximum amount of seconds to wait for error report
+processing and sending before concluding it failed.
+
+##### `debug_backtrace`
+
+Defaults to `false`. Set to `true` to have an error during collecting the
+report raise an exception, and to print some debugging information to
+stderr.
+
+##### `disable_global_handler`
+
+TODO
+Defaults to `false`. If this is `false`, this module will insert itself
+in the `sys.excepthook` chain and report those errors automatically
+before re-raising the exception.
+
+Set to `true` to disable this. Note that in this case the only way error
+reports will be reported is if you manually create and send them.
+
+##### `context_line_count`
+
+TODO
+Defaults to `200`. When an error is reported, this many lines above and below
+each stack function are included in the report.
+
+##### `tab_width`
+
+Defaults to `8`. If there are any hard tabs in the source code, it is unclear
+how many spaces they should be indented to correctly display the source code.
+Therefore the error report can override this number to specify how many spaces
+a hard tab should be represented by when viewing source code.
+
+### bt.createReport()
+
+TODO
+Create a report object that you can later choose whether or not to send.
+
+This may be useful to track something like a request.
+
+Returns a `BacktraceReport`.
+
+### bt.BacktraceReport
+
+Create a `BacktraceReport` object with `bt.createReport`.
+
+#### report.addAttribute(key, value)
+
+TODO
+Adds an attribute to a specific report. Valid types for `value` are
+`str`, `float`, `int`, and `bool`.
+
+Attributes are indexed and searchable. See also `addAnnotation`.
+
+#### report.addDictAttributes(dict)
+
+TODO
+Adds all key-value pairs of `dict` into the report recursively. For example:
+
+#### report.setError(ExceptionType, exception, traceback)
+
+TODO
+`error` is an Error object. Backtrace will extract information from this object
+such as the error message and stack trace and send this information along with
+the report.
+
+#### report.captureLastException()
+
+TODO
+This is the same as `report.setError(*sys.exc_info())`
+
+#### report.log(line)
+
+TODO
+Adds a timestamped log message to the report. Log output is available when you
+view a report.
+
+#### report.send()
+
+TODO
+Sends the error report to the endpoint specified in `initialize`.
+
 ## Installation
 
 ### Requirements
@@ -36,3 +157,14 @@ test suite with all of them:
  * Python 2
  * Python 3
  * PyPy
+
+### Publishing to PyPI
+
+1. Make sure all tests pass (see above).
+2. Update version number in backtracepython module.
+3. Tag the version in git.
+
+```
+python2 setup.py bdist_wheel --universal
+twine upload dist/*
+```

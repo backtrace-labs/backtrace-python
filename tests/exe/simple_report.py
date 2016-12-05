@@ -10,7 +10,9 @@ endpoint = "http://{}:{}".format(host, port)
 bt.initialize(
     endpoint=endpoint,
     token="FakeToken",
-    debug_backtrace=True)
+    debug_backtrace=True,
+    attributes={'a': 1, 'b': "bar"},
+)
 
 example_local_var = "hello this is my value"
 

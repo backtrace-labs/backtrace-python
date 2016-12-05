@@ -20,6 +20,13 @@ else:
 
 __all__ = ["BacktraceReport", "initialize", "version", "version_string"]
 
+class version:
+    major = 0
+    minor = 0
+    patch = 0
+
+version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
+
 class globs:
     endpoint = None
     token = None
@@ -27,14 +34,9 @@ class globs:
     debug_backtrace = False
     timeout = None
     tab_width = None
+    attributes = None
     next_source_code_id = 0
 
-class version:
-    major = 0
-    minor = 0
-    patch = 0
-
-version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
 process_start_time = time.time()
 
 def get_process_age():
@@ -156,6 +158,13 @@ def create_and_send_report(ex_value, ex_traceback):
                 'name': thread.name,
             }
 
+    init_attrs = {
+        'hostname': socket.gethostname(),
+        'process.age': get_process_age(),
+        'error.message': "\n".join(ex_value.args),
+    }
+    init_attrs.update(globs.attributes)
+
     report = {
         'uuid': str(uuid.uuid4()),
         'timestamp': int(time.time()),
@@ -169,11 +178,7 @@ def create_and_send_report(ex_value, ex_traceback):
         'entryThread': str(entry_thread.ident),
         'entrySourceCode': entry_source_code_id,
         'cwd': cwd_path,
-        'attributes': {
-            'hostname': socket.gethostname(),
-            'process.age': get_process_age(),
-            'error.message': "\n".join(ex_value.args),
-        },
+        'attributes': init_attrs,
         'sourceCode': source_code,
     }
     query = {
@@ -209,6 +214,7 @@ def initialize(**kwargs):
     globs.debug_backtrace = kwargs.get('debug_backtrace', False)
     globs.timeout = kwargs.get('timeout', 4)
     globs.tab_width = kwargs.get('tab_width', 8)
+    globs.attributes = kwargs.get('attributes', {})
 
     globs.next_except_hook = sys.excepthook
     sys.excepthook = bt_except_hook
