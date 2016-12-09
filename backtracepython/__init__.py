@@ -9,7 +9,7 @@ import threading
 import time
 import uuid
 
-__all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string"]
+__all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string", "send_last_exception"]
 
 class version:
     major = 0
@@ -169,6 +169,9 @@ class BacktraceReport:
     def set_annotation(self, key, value):
         self.report['annotations'][key] = value
 
+    def set_dict_annotations(self, target_dict):
+        self.report['annotations'].update(target_dict)
+
     def log(self, line):
         self.log_lines.append({
             'ts': time.time(),
@@ -240,3 +243,10 @@ def finalize():
         globs.worker.stdout.close()
         globs.worker.stderr.close()
     globs.worker.wait()
+
+def send_last_exception(**kwargs):
+    report = BacktraceReport()
+    report.capture_last_exception()
+    report.set_dict_attributes(kwargs.get('attributes', {}))
+    report.set_dict_annotations(kwargs.get('annotations', {}))
+    report.send()

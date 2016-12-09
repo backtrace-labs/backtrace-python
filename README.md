@@ -14,7 +14,7 @@ bt.initialize(
 
 ## Documentation
 
-### initialize
+### `bt.initialize(**kwargs)`
 
 #### Arguments
 
@@ -108,6 +108,10 @@ you view a specific report.
  * `key` - String which is the name of the annotation.
  * `value` - Any type which is JSON-serializable.
 
+#### `report.set_dict_annotations(dict)`
+
+Adds all key-value pairs of `dict` into the report.
+
 #### `report.set_exception(ExceptionType, exception, traceback)`
 
 `error` is an Error object. Backtrace will extract information from this object
@@ -126,6 +130,13 @@ view a report.
 #### `report.send()`
 
 Sends the error report to the endpoint specified in `initialize`.
+
+### `bt.send_last_exception(**kwargs)`
+
+ * `attributes` - dictionary of attributes to add to the report. See
+   `report.set_dict_attributes`
+ * `annotations` - dictionary of annotations to add to the report. See
+   `report.set_dict_annotations`
 
 ## Installation
 
