@@ -52,6 +52,13 @@ def check_multi_file(obj):
     assert fault_stack[-6]['funcName'] == "bar"
     assert fault_stack[-6]['line'] == 4
 
+def check_send_report(obj):
+    if sys.version_info.major >= 3:
+        assert obj['attributes']['error.message'] == "dsa"
+
+    assert obj['attributes']['genre'] == 'happy hardcore'
+    assert obj['annotations']['color'] == 'blue'
+
 def run_one_test(check_fn, exe_name):
     requested_server_address = ("127.0.0.1", 0)
 
@@ -92,3 +99,6 @@ class TestErrorReports(unittest.TestCase):
 
     def test_multi_file(self):
         run_one_test(check_multi_file, "multi_file.py")
+
+    def test_send_report(self):
+        run_one_test(check_send_report, "send_report.py")

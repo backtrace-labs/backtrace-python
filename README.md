@@ -138,6 +138,17 @@ Sends the error report to the endpoint specified in `initialize`.
  * `annotations` - dictionary of annotations to add to the report. See
    `report.set_dict_annotations`
 
+### `bt.send_report(msg, **kwargs)`
+
+ * `msg` - error message
+
+The keyword args can be:
+
+ * `attributes` - dictionary of attributes to add to the report. See
+   `report.set_dict_attributes`
+ * `annotations` - dictionary of annotations to add to the report. See
+   `report.set_dict_annotations`
+
 ## Installation
 
 ### Requirements

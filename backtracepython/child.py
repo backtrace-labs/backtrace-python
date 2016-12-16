@@ -44,7 +44,7 @@ def read_file_or_none(file_path):
 
 def create_source_object(source_path, min_line, max_line):
     ext = os.path.splitext(source_path)[1]
-    if ext == ".py":
+    if ext != ".pyc":
         text = read_file_or_none(source_path)
         if text is not None:
             lines = text.split("\n")
