@@ -47,6 +47,7 @@ def get_python_version():
 def send_worker_msg(msg):
     payload = json.dumps(msg).encode('utf-8')
     globs.worker.stdin.write(payload)
+    globs.worker.stdin.write("\n".encode('utf-8'))
     globs.worker.stdin.flush()
 
 def walk_tb_backwards(tb):

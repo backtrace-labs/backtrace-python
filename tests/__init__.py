@@ -59,6 +59,10 @@ def check_send_report(obj):
     assert obj['attributes']['genre'] == 'happy hardcore'
     assert obj['annotations']['color'] == 'blue'
 
+def check_threads(obj):
+    if sys.version_info.major >= 3:
+        assert len(obj['threads']) == 4
+
 def run_one_test(check_fn, exe_name):
     requested_server_address = ("127.0.0.1", 0)
 
@@ -102,3 +106,6 @@ class TestErrorReports(unittest.TestCase):
 
     def test_send_report(self):
         run_one_test(check_send_report, "send_report.py")
+
+    def test_threads(self):
+        run_one_test(check_threads, "threads.py")
