@@ -14,7 +14,7 @@ __all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", 
 class version:
     major = 0
     minor = 3
-    patch = 0
+    patch = 1
 
 version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
 
