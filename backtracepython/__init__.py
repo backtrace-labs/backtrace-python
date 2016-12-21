@@ -141,7 +141,7 @@ class BacktraceReport:
 
     def set_exception(self, garbage, ex_value, ex_traceback):
         self.report['classifiers'] = [ex_value.__class__.__name__]
-        self.report['attributes']['error.message'] = "\n".join(ex_value.args)
+        self.report['attributes']['error.message'] = str(ex_value)
 
         threads = {}
         for thread in threading.enumerate():
