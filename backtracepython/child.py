@@ -31,9 +31,9 @@ def post_json(endpoint, path, query, obj):
     }
     full_url = "{}/post?{}".format(endpoint, query)
     req = Request(full_url, payload, headers)
-    with urlopen(req) as resp:
-        if resp.code != 200:
-            raise Exception(resp.code, resp.read())
+    resp = urlopen(req)
+    if resp.code != 200:
+        raise Exception(resp.code, resp.read())
 
 def read_file_or_none(file_path):
     try:
