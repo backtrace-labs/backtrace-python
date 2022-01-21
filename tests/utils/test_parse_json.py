@@ -75,9 +75,6 @@ class TestParseJson(unittest.TestCase):
             "-Infinity": null
         }"""
         # data should have illegal values replaced with nulls. Otherwise they should be the same
-        # whitespaces are stripped so we don't need to perfectly format the above <data>_expected strings.
-        # strip_whitespaces will remove white spaces from fields and values, so it is not a perfect solution.
-        # We are not testing anything that depends on the whitespaces.
         self.assertEqual(json.loads(parse_json(data_nan, False)), json.loads(data_nan_expected))
         self.assertEqual(json.loads(parse_json(data_nested_nan, False)), json.loads(data_nested_nan_expected))
         self.assertEqual(json.loads(parse_json(data_string_nan_nan, False)), json.loads(data_string_nan_nan_expected))
