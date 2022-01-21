@@ -4,6 +4,8 @@ import subprocess
 import sys
 import unittest
 
+from tests.utils import TestUtils
+
 if sys.version_info.major >= 3:
     from http.server import HTTPServer
     from http.server import BaseHTTPRequestHandler
@@ -12,6 +14,7 @@ else:
     from BaseHTTPServer import BaseHTTPRequestHandler
 
 tests_dir = os.path.dirname(os.path.realpath(__file__))
+exe_dir = os.path.join(tests_dir, "exe")
 exe_dir = os.path.join(tests_dir, "exe")
 debug_backtrace = False
 
@@ -109,3 +112,6 @@ class TestErrorReports(unittest.TestCase):
 
     def test_threads(self):
         run_one_test(check_threads, "threads.py")
+
+# Run tests for utilities
+TestUtils()

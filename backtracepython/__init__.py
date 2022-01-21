@@ -1,5 +1,3 @@
-import json
-import math
 import os
 import platform
 import socket
@@ -9,12 +7,14 @@ import threading
 import time
 import uuid
 
+from backtracepython.utils import parse_json
+
 __all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string", "send_last_exception", "send_report"]
 
 class version:
     major = 0
     minor = 3
-    patch = 3
+    patch = 4
 
 version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
 
@@ -45,7 +45,7 @@ def get_python_version():
         sys.version_info.releaselevel)
 
 def send_worker_msg(msg):
-    payload = json.dumps(msg).encode('utf-8')
+    payload = parse_json(msg).encode('utf-8')
     globs.worker.stdin.write(payload)
     globs.worker.stdin.write("\n".encode('utf-8'))
     globs.worker.stdin.flush()

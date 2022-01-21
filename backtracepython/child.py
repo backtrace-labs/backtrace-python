@@ -3,6 +3,8 @@ import sys
 import os
 import json
 
+from backtracepython.utils import parse_json
+
 if sys.version_info.major >= 3:
     from urllib.parse import urlencode
     from urllib.request import Request
@@ -22,8 +24,8 @@ def eprint(*args, **kwargs):
 
 def post_json(endpoint, path, query, obj):
     if globs.debug_backtrace:
-        eprint(json.dumps(obj, indent=2))
-    payload = json.dumps(obj).encode('utf-8')
+        eprint(parse_json(obj, indent=2))
+    payload = parse_json(obj).encode('utf-8')
     query = urlencode(query)
     headers = {
         'Content-Type': "application/json",
