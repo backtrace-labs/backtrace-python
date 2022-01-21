@@ -15,7 +15,6 @@ else:
 
 tests_dir = os.path.dirname(os.path.realpath(__file__))
 exe_dir = os.path.join(tests_dir, "exe")
-exe_dir = os.path.join(tests_dir, "exe")
 debug_backtrace = False
 
 def check_basic_report(obj):
