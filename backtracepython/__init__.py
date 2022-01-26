@@ -1,5 +1,4 @@
-import json
-import math
+import simplejson as json
 import os
 import platform
 import socket
@@ -45,7 +44,7 @@ def get_python_version():
         sys.version_info.releaselevel)
 
 def send_worker_msg(msg):
-    payload = json.dumps(msg).encode('utf-8')
+    payload = json.dumps(msg, ignore_nan=True).encode('utf-8')
     globs.worker.stdin.write(payload)
     globs.worker.stdin.write("\n".encode('utf-8'))
     globs.worker.stdin.flush()

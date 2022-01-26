@@ -1,7 +1,7 @@
 from __future__ import print_function
 import sys
 import os
-import json
+import simplejson as json
 
 if sys.version_info.major >= 3:
     from urllib.parse import urlencode
@@ -22,8 +22,8 @@ def eprint(*args, **kwargs):
 
 def post_json(endpoint, path, query, obj):
     if globs.debug_backtrace:
-        eprint(json.dumps(obj, indent=2))
-    payload = json.dumps(obj).encode('utf-8')
+        eprint(json.dumps(obj, indent=2, ignore_nan=True))
+    payload = json.dumps(obj, ignore_nan=True).encode('utf-8')
     query = urlencode(query)
     headers = {
         'Content-Type': "application/json",

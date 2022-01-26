@@ -13,4 +13,7 @@ setup(
     packages=['backtracepython'],
     test_suite="tests",
     url='https://github.com/backtrace-labs/backtrace-python',
+    install_requires=[
+        'simplejson',
+    ]
 )
