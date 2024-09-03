@@ -6,4 +6,4 @@ COPY . /sdk
 RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
-CMD ["python", "testpy.py"]
+CMD ["pytest"]
