@@ -1,15 +1,13 @@
-import simplejson as json
 import os
 import subprocess
 import sys
-import pytest
+
+import simplejson as json
 
 if sys.version_info.major >= 3:
-    from http.server import HTTPServer
-    from http.server import BaseHTTPRequestHandler
+    from http.server import BaseHTTPRequestHandler, HTTPServer
 else:
-    from BaseHTTPServer import HTTPServer
-    from BaseHTTPServer import BaseHTTPRequestHandler
+    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 tests_dir = os.path.dirname(os.path.realpath(__file__))
 exe_dir = os.path.join(tests_dir, "exe")
@@ -97,15 +95,14 @@ def run_one_test(check_fn, exe_name):
     httpd.server_close()
     
 
-class TestErrorReports(unittest.TestCase):
-    def test_basic_report(self):
-        run_one_test(check_basic_report, "simple_report.py")
+def test_basic_report():
+    run_one_test(check_basic_report, "simple_report.py")
 
-    def test_multi_file(self):
-        run_one_test(check_multi_file, "multi_file.py")
+def test_multi_file():
+    run_one_test(check_multi_file, "multi_file.py")
 
-    def test_send_report(self):
-        run_one_test(check_send_report, "send_report.py")
+def test_send_report():
+    run_one_test(check_send_report, "send_report.py")
 
-    def test_threads(self):
-        run_one_test(check_threads, "threads.py")
+def test_threads():
+    run_one_test(check_threads, "threads.py")
