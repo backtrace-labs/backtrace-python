@@ -30,16 +30,13 @@ def check_basic_report(obj):
     assert obj['attributes']['a'] == 1
     assert obj['attributes']['b'] == "bar"
 
-def check_multi_file(obj):
-    if sys.version_info.major >= 3:
-        assert obj['classifiers'][0] == "JSONDecodeError"
-        assert obj['attributes']['error.message'] == "Expecting value: line 1 column 1 (char 0)"
-    elif obj['langVersion'].startswith("PyPy"):
+def check_multi_file(obj): 
+    if obj['langVersion'].startswith("PyPy"):
         assert obj['classifiers'][0] == "ValueError"
         assert obj['attributes']['error.message'] == "Error when decoding true at char 1"
     else:
         assert obj['classifiers'][0] == "JSONDecodeError"
-        assert obj['attributes']['error.message'] == "No JSON object could be decoded"
+        assert obj['attributes']['error.message'] == "Expecting value: line 1 column 1 (char 0)"
 
     fault_stack = obj['threads'][obj['mainThread']]['stack']
     source_code_id = fault_stack[-1]['sourceCode']
