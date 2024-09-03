@@ -38,7 +38,7 @@ def check_multi_file(obj):
         assert obj['classifiers'][0] == "ValueError"
         assert obj['attributes']['error.message'] == "Error when decoding true at char 1"
     else:
-        assert obj['classifiers'][0] == "ValueError"
+        assert obj['classifiers'][0] == "JSONDecodeError"
         assert obj['attributes']['error.message'] == "No JSON object could be decoded"
 
     fault_stack = obj['threads'][obj['mainThread']]['stack']
