@@ -2,7 +2,7 @@ import simplejson as json
 import os
 import subprocess
 import sys
-import unittest
+import pytest
 
 if sys.version_info.major >= 3:
     from http.server import HTTPServer
