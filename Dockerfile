@@ -4,7 +4,6 @@ WORKDIR /sdk
 COPY . /sdk
 
 RUN pip install --upgrade pip \
-    && pip install tox \
-    && pip install -r requirements.txt  # Install project dependencies
+    && pip install -r requirements.txt
 
-CMD ["tox"]
+CMD ["python", "testpy.py"]
