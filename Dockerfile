@@ -4,6 +4,6 @@ WORKDIR /sdk
 COPY . /sdk
 
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+    && pip install pytest -r requirements.txt
 
 CMD ["pytest"]
