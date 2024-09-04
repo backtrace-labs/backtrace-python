@@ -8,4 +8,4 @@ RUN pip install --upgrade pip \
 
 COPY . /sdk
 
-CMD ["pytest"]
+CMD ["PYTHONPATH=/sdk " "pytest"]
