@@ -7,5 +7,6 @@ RUN pip install --upgrade pip \
     && pip install pytest -r requirements.txt
 
 COPY . /sdk
+ENV PYTHONPATH=/sdk
 
 CMD ["pytest"]

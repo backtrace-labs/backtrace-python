@@ -1,4 +1,3 @@
-import simplejson as json
 import os
 import platform
 import socket
@@ -7,6 +6,8 @@ import sys
 import threading
 import time
 import uuid
+
+import simplejson as json
 
 __all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string", "send_last_exception", "send_report"]
 
@@ -24,7 +25,14 @@ class globs:
     debug_backtrace = False
     timeout = None
     tab_width = None
-    attributes = None
+    attributes = { 
+        'backtrace.agent': 'backtrace-python', 
+        'backtrace.version': version_string, 
+        'application.session': str(uuid.uuid4()),
+        'uname.sysname': platform.system(),
+        'uname.version': platform.version(),
+        'uname.release': platform.release()
+    }
     context_line_count = None
     worker = None
     next_source_code_id = 0
@@ -106,16 +114,17 @@ class BacktraceReport:
         self.fault_thread = threading.current_thread()
         self.source_code = {}
         self.source_path_dict = {}
-
+        entry_source_code_id = None
         import __main__
-        entry_path = os.path.abspath(__main__.__file__)
         cwd_path = os.path.abspath(os.getcwd())
         entry_thread = get_main_thread()
-        entry_source_code_id = add_source_code(entry_path, self.source_code, self.source_path_dict, 1)
+        if hasattr(__main__, '__file__'):
+            entry_source_code_id = add_source_code(__main__.__file__, self.source_code, self.source_path_dict, 1) if hasattr(__main__, '__file__') else None
 
         init_attrs = {
             'hostname': socket.gethostname(),
             'process.age': get_process_age(),
+            'error.type': 'Exception'
         }
         init_attrs.update(globs.attributes)
 
@@ -130,13 +139,14 @@ class BacktraceReport:
             'agentVersion': version_string,
             'mainThread': str(self.fault_thread.ident),
             'entryThread': str(entry_thread.ident),
-            'entrySourceCode': entry_source_code_id,
             'cwd': cwd_path,
             'attributes': init_attrs,
             'annotations': {
                 'Environment Variables': dict(os.environ),
             },
         }
+        if entry_source_code_id is not None:
+            self.report['entrySourceCode'] = entry_source_code_id
 
     def set_exception(self, garbage, ex_value, ex_traceback):
         self.report['classifiers'] = [ex_value.__class__.__name__]
@@ -168,6 +178,9 @@ class BacktraceReport:
 
     def set_annotation(self, key, value):
         self.report['annotations'][key] = value
+    
+    def get_attributes(self): 
+        return self.report['attributes']
 
     def set_dict_annotations(self, target_dict):
         self.report['annotations'].update(target_dict)
@@ -196,6 +209,7 @@ class BacktraceReport:
 def create_and_send_report(ex_type, ex_value, ex_traceback):
     report = BacktraceReport()
     report.set_exception(ex_type, ex_value, ex_traceback)
+    report.set_attribute('error.type', 'Unhandled exception')
     report.send()
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):
@@ -225,7 +239,7 @@ def initialize(**kwargs):
     globs.debug_backtrace = kwargs.get('debug_backtrace', False)
     globs.timeout = kwargs.get('timeout', 4)
     globs.tab_width = kwargs.get('tab_width', 8)
-    globs.attributes = kwargs.get('attributes', {})
+    globs.attributes.update(kwargs.get('attributes', {}))
     globs.context_line_count = kwargs.get('context_line_count', 200)
 
     stdio_value = None if globs.debug_backtrace else subprocess.PIPE
@@ -249,6 +263,7 @@ def send_last_exception(**kwargs):
     report.capture_last_exception()
     report.set_dict_attributes(kwargs.get('attributes', {}))
     report.set_dict_annotations(kwargs.get('annotations', {}))
+    report.set_attribute('error.type', 'Exception')
     report.send()
 
 
@@ -263,5 +278,6 @@ def send_report(msg, **kwargs):
     report.set_exception(*make_an_exception())
     report.set_dict_attributes(kwargs.get('attributes', {}))
     report.set_dict_annotations(kwargs.get('annotations', {}))
-    report.report['attributes']['error.message'] = msg
+    report.set_attribute('error.message', msg)
+    report.set_attribute('error.type', 'Message')
     report.send()
