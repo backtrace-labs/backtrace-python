@@ -1,0 +1,2 @@
+six
+simplejson==3.19.3
