@@ -9,6 +9,11 @@ import uuid
 
 import simplejson as json
 
+if sys.version_info.major >= 3:
+    from urllib.parse import urlencode
+else:
+    from urllib import urlencode
+
 __all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string", "send_last_exception", "send_report"]
 
 class version:
@@ -20,7 +25,6 @@ version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
 
 class globs:
     endpoint = None
-    token = None
     next_except_hook = None
     debug_backtrace = False
     timeout = None
@@ -199,7 +203,6 @@ class BacktraceReport:
             'report': self.report,
             'context_line_count': globs.context_line_count,
             'timeout': globs.timeout,
-            'token': globs.token,
             'endpoint': globs.endpoint,
             'tab_width': globs.tab_width,
             'debug_backtrace': globs.debug_backtrace,
@@ -234,8 +237,7 @@ def bt_except_hook(ex_type, ex_value, ex_traceback):
     globs.next_except_hook(ex_type, ex_value, ex_traceback)
 
 def initialize(**kwargs):
-    globs.endpoint = kwargs['endpoint']
-    globs.token = kwargs['token']
+    globs.endpoint = construct_submission_url(kwargs['endpoint'], kwargs.get('token', None))
     globs.debug_backtrace = kwargs.get('debug_backtrace', False)
     globs.timeout = kwargs.get('timeout', 4)
     globs.tab_width = kwargs.get('tab_width', 8)
@@ -251,6 +253,15 @@ def initialize(**kwargs):
         globs.next_except_hook = sys.excepthook
         sys.excepthook = bt_except_hook
 
+def construct_submission_url(endpoint, token):
+    if "submit.backtrace.io" in endpoint or token is None:
+        return endpoint
+
+    return  "{}/post?{}".format(endpoint, urlencode({
+        'token': token,
+        'format': "json",
+    }))
+    
 def finalize():
     send_worker_msg({ 'id': 'terminate' })
     if not globs.debug_backtrace:
