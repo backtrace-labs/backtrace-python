@@ -6,9 +6,12 @@ import sys
 import simplejson as json
 
 if sys.version_info.major >= 3:
-    from urllib.request import Request, urlopen
+    from urllib.request import Request
+    from urllib.request import urlopen
 else:
-    from urllib2 import Request, urlopen
+    from urllib2 import urlopen
+    from urllib2 import Request
+
 class globs:
     tab_width = None
     debug_backtrace = None
@@ -17,16 +20,16 @@ class globs:
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def post_json(endpoint, obj):
+def post_json(full_url, obj):
     if globs.debug_backtrace:
-        eprint(endpoint)
+        eprint(full_url)
         eprint(json.dumps(obj, indent=2, ignore_nan=True))
     payload = json.dumps(obj, ignore_nan=True).encode('utf-8')
     headers = {
         'Content-Type': "application/json",
         'Content-Length': len(payload),
     }
-    req = Request(url = endpoint, method= 'POST', data = payload,headers = headers)
+    req = Request(full_url, payload, headers)
     resp = urlopen(req)
     if resp.code != 200:
         raise Exception(resp.code, resp.read())
