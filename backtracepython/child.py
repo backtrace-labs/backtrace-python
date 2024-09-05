@@ -1,14 +1,14 @@
 from __future__ import print_function
-import sys
+
 import os
+import sys
+
 import simplejson as json
 
 if sys.version_info.major >= 3:
-    from urllib.parse import urlencode
     from urllib.request import Request
     from urllib.request import urlopen
 else:
-    from urllib import urlencode
     from urllib2 import urlopen
     from urllib2 import Request
 
@@ -20,16 +20,15 @@ class globs:
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def post_json(endpoint, path, query, obj):
+def post_json(full_url, obj):
     if globs.debug_backtrace:
+        eprint(full_url)
         eprint(json.dumps(obj, indent=2, ignore_nan=True))
     payload = json.dumps(obj, ignore_nan=True).encode('utf-8')
-    query = urlencode(query)
     headers = {
         'Content-Type': "application/json",
         'Content-Length': len(payload),
     }
-    full_url = "{}/post?{}".format(endpoint, query)
     req = Request(full_url, payload, headers)
     resp = urlopen(req)
     if resp.code != 200:
@@ -75,13 +74,7 @@ def prepare_and_send_report(msg):
     source_code = msg['source_code']
     collect_source_code(report, source_code)
 
-    endpoint = msg['endpoint']
-    token = msg['token']
-    query = {
-        'token': token,
-        'format': "json",
-    }
-    post_json(endpoint, "/post", query, report)
+    post_json(msg['endpoint'], report)
 
 for line in sys.stdin:
     msg = json.loads(line)
@@ -90,4 +83,4 @@ for line in sys.stdin:
     elif msg['id'] == 'send':
         prepare_and_send_report(msg)
     else:
-        raise Error("invalid message id", msg['id'])
+        raise Exception("invalid message id", msg['id'])
