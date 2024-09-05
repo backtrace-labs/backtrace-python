@@ -22,20 +22,11 @@ def main():
     except:
         backtrace.send_last_exception()
 
-
     # send a message 
     backtrace.send_report("test message")
-
 
     # generate and send unhandled exception
     open_file("not existing file")
 
-
-
 if __name__ == "__main__":
     main()
-
-
-
-
-
