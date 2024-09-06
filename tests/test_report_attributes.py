@@ -2,18 +2,25 @@ from backtracepython import BacktraceReport
 
 report = BacktraceReport()
 
+
 def test_report_session_attribute_is_defined():
-    assert report.get_attributes()['application.session'] is not None
+    assert report.get_attributes()["application.session"] is not None
+
 
 def test_report_session_attribute_doesnt_change():
     compare_report = BacktraceReport()
 
-    assert report.get_attributes()['application.session'] == compare_report.get_attributes()['application.session']
+    assert (
+        report.get_attributes()["application.session"]
+        == compare_report.get_attributes()["application.session"]
+    )
+
 
 def test_report_backtrace_reporter_attributes():
     attributes = report.get_attributes()
-    assert attributes['backtrace.agent'] == 'backtrace-python'
-    assert attributes['backtrace.version'] is not None
+    assert attributes["backtrace.agent"] == "backtrace-python"
+    assert attributes["backtrace.version"] is not None
+
 
 def test_report_attribute_override():
     override_report = BacktraceReport()

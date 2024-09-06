@@ -1,4 +1,5 @@
 import sys, os
+
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, root_dir)
 import backtracepython as bt
@@ -14,7 +15,11 @@ bt.initialize(
     context_line_count=2,
 )
 
+
 def do_the_thing():
-    bt.send_report("dsa", annotations={"color": "blue"}, attributes={"genre": "happy hardcore"})
+    bt.send_report(
+        "dsa", annotations={"color": "blue"}, attributes={"genre": "happy hardcore"}
+    )
+
 
 do_the_thing()
