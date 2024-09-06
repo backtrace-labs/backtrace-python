@@ -18,15 +18,12 @@ class AttributeManager:
         self.scoped_attributes = {}
 
         for scoped_attribute_provider in [MachineIdAttributeProvider(), BacktraceAttributeProvider(), SystemAttributeProvider(), SessionAttributeProvider()]:
-            self.scoped_attributes.update(scoped_attribute_provider.get())
+            self.safety_add(self.scoped_attributes, scoped_attribute_provider)
 
     def get(self):
         result = {}
         for dynamic_attribute_provider in self.dynamic_attributes:
-            try:
-                result.update(dynamic_attribute_provider.get())
-            except:
-                continue
+            self.safety_add(result, dynamic_attribute_provider)
         result.update(self.scoped_attributes)
 
         return result
@@ -34,5 +31,11 @@ class AttributeManager:
 
     def add(self, attributes): 
         self.scoped_attributes.update(attributes)
+
+    def safety_add(self, dictionary, provider):
+        try:
+                dictionary.update(provider.get())
+        except:
+            return
         
         
