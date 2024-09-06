@@ -3,6 +3,7 @@ from backtracepython.attributes.backtrace_attribute_provider import \
 from backtracepython.attributes.linux_memory_attribute_provider import LinuxMemoryAttributeProvider
 from backtracepython.attributes.machineId_attribute_provider import \
     MachineIdAttributeProvider
+from backtracepython.attributes.machine_attribute_provider import MachineAttributeProvider
 from backtracepython.attributes.process_attribute_provider import \
     ProcessAttributeProvider
 from backtracepython.attributes.session_attribute_provider import \
@@ -16,8 +17,8 @@ class AttributeManager:
     def __init__(self):
         self.dynamic_attributes = [ProcessAttributeProvider(), LinuxMemoryAttributeProvider()]
         self.scoped_attributes = {}
-
-        for scoped_attribute_provider in [MachineIdAttributeProvider(), BacktraceAttributeProvider(), SystemAttributeProvider(), SessionAttributeProvider()]:
+        self.scoped_attribute_providers = [MachineIdAttributeProvider(), BacktraceAttributeProvider(), SystemAttributeProvider(), SessionAttributeProvider(), MachineAttributeProvider()]
+        for scoped_attribute_provider in self.scoped_attribute_providers:
             self.safety_add(self.scoped_attributes, scoped_attribute_provider)
 
     def get(self):
@@ -34,6 +35,6 @@ class AttributeManager:
 
     def safety_add(self, dictionary, provider):
         try:
-                dictionary.update(provider.get())
+            dictionary.update(provider.get())
         except:
             return
