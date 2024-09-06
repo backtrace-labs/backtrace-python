@@ -1,12 +1,9 @@
 import multiprocessing
 import os
 import socket
-import sys
 import time
 
 from backtracepython.attributes.attribute_provider import AttributeProvider
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 class ProcessAttributeProvider(AttributeProvider):

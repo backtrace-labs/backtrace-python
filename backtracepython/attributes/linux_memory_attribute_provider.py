@@ -1,12 +1,9 @@
-import platform
 import re
-import subprocess
 
 from backtracepython.attributes.attribute_provider import AttributeProvider
 
 
 class LinuxMemoryAttributeProvider(AttributeProvider):
-    is_linux = platform.system() == "Linux"
     memory_match = re.compile(r"^(.+):\s+(\d+)\s*(.+)?$")
 
     memory_parser = {
@@ -53,13 +50,12 @@ class LinuxMemoryAttributeProvider(AttributeProvider):
 
     def get(self):
         result = {}
-        if not self.is_linux:
-            return result
-        result.update(self.readSystemInfo())
-        result.update(self.readProcessinfo())
+
+        result.update(self.read_system_info())
+        result.update(self.read_process_info())
         return result
 
-    def readSystemInfo(self):
+    def read_system_info(self):
         result = {}
         with open("/proc/meminfo", "r") as mem_info:
             for line in mem_info:
@@ -77,7 +73,7 @@ class LinuxMemoryAttributeProvider(AttributeProvider):
                 result[attribute_name] = value
         return result
 
-    def readProcessinfo(self):
+    def read_process_info(self):
         result = {}
         with open("/proc/self/status", "r") as process_info:
             for line in process_info:
