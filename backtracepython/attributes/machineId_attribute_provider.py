@@ -14,12 +14,12 @@ class MachineIdAttributeProvider(AttributeProvider):
     }
 
     def __init__(self):
-        self.id = self.readMachineId()
+        self.id = self.read_machine_id()
 
     def get(self):
         return {"guid": self.id}
 
-    def readMachineId(self):
+    def read_machine_id(self):
 
         current_system = platform.system()
         if current_system == "Windows":

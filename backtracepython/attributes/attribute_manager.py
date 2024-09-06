@@ -47,7 +47,7 @@ class AttributeManager:
         except:
             return
 
-    def get_predefined_scoped_attribute_providers():
+    def get_predefined_scoped_attribute_providers(self):
         return [
             MachineIdAttributeProvider(),
             BacktraceAttributeProvider(),
@@ -56,7 +56,7 @@ class AttributeManager:
             MachineAttributeProvider(),
         ]
 
-    def get_predefined_dynamic_attribute_providers():
+    def get_predefined_dynamic_attribute_providers(self):
         result = [ProcessAttributeProvider()]
 
         if platform.system() == "Linux":
