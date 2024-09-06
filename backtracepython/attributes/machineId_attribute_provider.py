@@ -36,4 +36,3 @@ class MachineIdAttributeProvider(AttributeProvider):
     def execute(self, command):
         result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
         return result.decode('utf-8').strip()
-        
