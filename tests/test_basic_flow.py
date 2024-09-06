@@ -54,7 +54,7 @@ def check_multi_file(obj):
     assert lines[fault_stack[-1]["line"] - 1] == "call_a_file(True)"
 
     assert fault_stack[-6]["funcName"] == "bar"
-    assert fault_stack[-6]["line"] == 4
+    assert fault_stack[-6]["line"] == 5
 
 
 def check_send_report(obj):
