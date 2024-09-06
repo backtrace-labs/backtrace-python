@@ -9,7 +9,7 @@ from backtracepython.attributes.attribute_provider import AttributeProvider
 class MachineIdAttributeProvider(AttributeProvider):
     commands = {
         'Windows': 'reg query "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Cryptography" /v MachineGuid',
-        'Darwin': ['ioreg', '-rd1', '-c' ,'IOPlatformExpertDevice'],
+        'Darwin': 'ioreg -rd1 -c IOPlatformExpertDevice',
         'Linux': '( cat /var/lib/dbus/machine-id /etc/machine-id 2> /dev/null || hostname ) | head -n 1 || :',
         'FreeBSD': 'kenv -q smbios.system.uuid || sysctl -n kern.hostuuid'
     }
@@ -35,11 +35,6 @@ class MachineIdAttributeProvider(AttributeProvider):
             return re.sub(r'=|\s+|"','', result, flags=re.IGNORECASE)[:32]
 
     def execute(self, command):
-        if sys.version_info.major >= 3:
-            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            return result.stdout
-        else:
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout = process.communicate()
-            return stdout
+        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        return result.decode('utf-8').strip()
         
