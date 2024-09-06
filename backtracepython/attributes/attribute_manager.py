@@ -37,5 +37,3 @@ class AttributeManager:
                 dictionary.update(provider.get())
         except:
             return
-        
-        
