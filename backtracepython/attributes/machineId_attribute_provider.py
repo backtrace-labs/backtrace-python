@@ -1,7 +1,6 @@
 import platform
 import re
 import subprocess
-import sys
 
 from backtracepython.attributes.attribute_provider import AttributeProvider
 

@@ -1,5 +1,6 @@
 from backtracepython.attributes.backtrace_attribute_provider import \
     BacktraceAttributeProvider
+from backtracepython.attributes.linux_memory_attribute_provider import LinuxMemoryAttributeProvider
 from backtracepython.attributes.machineId_attribute_provider import \
     MachineIdAttributeProvider
 from backtracepython.attributes.process_attribute_provider import \
@@ -13,7 +14,7 @@ from backtracepython.attributes.system_attribute_provider import \
 class AttributeManager:
 
     def __init__(self):
-        self.dynamic_attributes = [ProcessAttributeProvider()]
+        self.dynamic_attributes = [ProcessAttributeProvider(), LinuxMemoryAttributeProvider()]
         self.scoped_attributes = {}
 
         for scoped_attribute_provider in [MachineIdAttributeProvider(), BacktraceAttributeProvider(), SystemAttributeProvider(), SessionAttributeProvider()]:
