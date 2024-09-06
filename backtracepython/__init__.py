@@ -1,6 +1,5 @@
 import os
 import platform
-import socket
 import subprocess
 import sys
 import threading
@@ -9,6 +8,10 @@ import uuid
 
 import simplejson as json
 
+from backtracepython.attributes.attribute_manager import AttributeManager
+
+from .version import version, version_string
+
 if sys.version_info.major >= 3:
     from urllib.parse import urlencode
 else:
@@ -16,12 +19,7 @@ else:
 
 __all__ = ["BacktraceReport", "initialize", "finalize", "terminate", "version", "version_string", "send_last_exception", "send_report"]
 
-class version:
-    major = 0
-    minor = 3
-    patch = 3
-
-version_string = "{}.{}.{}".format(version.major, version.minor, version.patch)
+attribute_manager = AttributeManager()
 
 class globs:
     endpoint = None
@@ -29,23 +27,12 @@ class globs:
     debug_backtrace = False
     timeout = None
     tab_width = None
-    attributes = { 
-        'backtrace.agent': 'backtrace-python', 
-        'backtrace.version': version_string, 
-        'application.session': str(uuid.uuid4()),
-        'uname.sysname': platform.system(),
-        'uname.version': platform.version(),
-        'uname.release': platform.release()
-    }
+    attributes = {}
     context_line_count = None
     worker = None
     next_source_code_id = 0
 
-process_start_time = time.time()
 child_py_path = os.path.join(os.path.dirname(__file__), "child.py")
-
-def get_process_age():
-    return int(time.time() - process_start_time)
 
 def get_python_version():
     return "{} {}.{}.{}-{}".format(
@@ -126,11 +113,9 @@ class BacktraceReport:
             entry_source_code_id = add_source_code(__main__.__file__, self.source_code, self.source_path_dict, 1) if hasattr(__main__, '__file__') else None
 
         init_attrs = {
-            'hostname': socket.gethostname(),
-            'process.age': get_process_age(),
             'error.type': 'Exception'
         }
-        init_attrs.update(globs.attributes)
+        init_attrs.update(attribute_manager.get())
 
         self.log_lines = []
 
@@ -241,9 +226,9 @@ def initialize(**kwargs):
     globs.debug_backtrace = kwargs.get('debug_backtrace', False)
     globs.timeout = kwargs.get('timeout', 4)
     globs.tab_width = kwargs.get('tab_width', 8)
-    globs.attributes.update(kwargs.get('attributes', {}))
     globs.context_line_count = kwargs.get('context_line_count', 200)
 
+    attribute_manager.add(kwargs.get('attributes', {}))
     stdio_value = None if globs.debug_backtrace else subprocess.PIPE
     globs.worker = subprocess.Popen([sys.executable, child_py_path],
         stdin=subprocess.PIPE, stdout=stdio_value, stderr=stdio_value)
