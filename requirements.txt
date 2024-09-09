@@ -1,2 +1,4 @@
 six
 simplejson==3.19.3
+pytest
+tox

@@ -18,13 +18,15 @@ class globs:
     context_line_count = None
 
 def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+    print(*args, flush = True, **kwargs)
 
 def post_json(full_url, obj):
+    payload = json.dumps(obj, ignore_nan=True, bigint_as_string = True)
     if globs.debug_backtrace:
-        eprint(full_url)
-        eprint(json.dumps(obj, indent=2, ignore_nan=True))
-    payload = json.dumps(obj, ignore_nan=True).encode('utf-8')
+        data = "Submitting a payload to {},\n {}\n".format(full_url, payload)
+        eprint(data)
+
+    payload = payload.encode('utf-8')
     headers = {
         'Content-Type': "application/json",
         'Content-Length': len(payload),

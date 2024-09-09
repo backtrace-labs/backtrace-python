@@ -26,10 +26,33 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install tox
+          pip install -r requirements.txt
 
       - name: Run Tox
         run: tox
+
+  # On windows we want to test only latest python version.
+  # Everything else will be tested against Linux
+  test_on_windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          update-environment: false
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest
 
   test_python_2:
     runs-on: ubuntu-latest

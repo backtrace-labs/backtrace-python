@@ -2,11 +2,10 @@
 
 from setuptools import find_packages, setup
 
-import backtracepython
 
 setup(
     name='backtracepython',
-    version=backtracepython.version_string,
+    version='0.3.3',
     description='Backtrace.io error reporting tool for Python',
     author='Backtrace.io',
     author_email='team@backtrace.io',
