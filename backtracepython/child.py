@@ -20,7 +20,7 @@ class globs:
 
 
 def eprint(*args, **kwargs):
-    print(*args, flush=True, **kwargs)
+    print(*args, **kwargs)
 
 
 def post_json(full_url, obj):
