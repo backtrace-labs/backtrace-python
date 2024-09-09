@@ -4,7 +4,8 @@ WORKDIR /sdk
 COPY ./requirements.txt /sdk
 
 RUN pip install --upgrade pip \
-    && pip install pytest -r requirements.txt
+    && pip install  $(grep -ivE "black" requirements.txt) 
+# black is not available in python2.7 container
 
 COPY . /sdk
 ENV PYTHONPATH=/sdk
