@@ -31,6 +31,9 @@ jobs:
       - name: Run Tox
         run: tox
 
+      - name: Run linter
+        run: black --check .
+
   # On windows we want to test only latest python version.
   # Everything else will be tested against Linux
   test_on_windows:
