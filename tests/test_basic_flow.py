@@ -26,7 +26,7 @@ def check_basic_report(obj):
 
     source_code_id = obj["threads"][obj["mainThread"]]["stack"][0]["sourceCode"]
     assert obj["sourceCode"][source_code_id]["path"].endswith(
-        "tests/exe/simple_report.py"
+        os.path.join(tests_dir, "exe", "simple_report.py")
     )
     assert obj["sourceCode"][source_code_id]["text"].endswith("\na = b\n")
 
@@ -49,7 +49,9 @@ def check_multi_file(obj):
 
     fault_stack = obj["threads"][obj["mainThread"]]["stack"]
     source_code_id = fault_stack[-1]["sourceCode"]
-    assert obj["sourceCode"][source_code_id]["path"].endswith("tests/exe/multi_file.py")
+    assert obj["sourceCode"][source_code_id]["path"].endswith(
+        os.path.join(tests_dir, "exe", "multi_file.py")
+    )
     lines = obj["sourceCode"][source_code_id]["text"].split("\n")
     assert lines[fault_stack[-1]["line"] - 1] == "call_a_file(True)"
 
@@ -91,19 +93,11 @@ def run_one_test(check_fn, exe_name):
     host, port = httpd.server_address
 
     exe_path = os.path.join(exe_dir, exe_name)
-    stdio_action = None if debug_backtrace else subprocess.PIPE
-    child = subprocess.Popen(
-        [sys.executable, exe_path, host, str(port)],
-        stdout=stdio_action,
-        stderr=stdio_action,
-    )
+    child = subprocess.Popen([sys.executable, exe_path, host, str(port)])
 
     httpd.handle_request()
     check_fn(non_local.json_object)
     child.wait()
-    if stdio_action is not None:
-        child.stdout.close()
-        child.stderr.close()
     httpd.server_close()
 
 

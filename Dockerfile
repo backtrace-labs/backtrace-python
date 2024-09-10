@@ -4,7 +4,7 @@ WORKDIR /sdk
 COPY ./requirements.txt /sdk
 
 RUN pip install --upgrade pip \
-    && pip install pytest -r requirements.txt
+    && pip install -r requirements.txt
 
 COPY . /sdk
 ENV PYTHONPATH=/sdk
