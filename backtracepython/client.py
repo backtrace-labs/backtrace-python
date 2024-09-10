@@ -25,21 +25,25 @@ class globs:
 
 child_py_path = os.path.join(os.path.dirname(__file__), "child.py")
 
+
 def get_attributes():
     return attribute_manager.get()
 
+
 def send_worker_report(report, source_code):
-    send_worker_msg({
-        "id": "send",
-        "report": report,
-        "context_line_count": globs.context_line_count,
-        "timeout": globs.timeout,
-        "endpoint": globs.endpoint,
-        "tab_width": globs.tab_width,
-        "debug_backtrace": globs.debug_backtrace,
-        "source_code": source_code,
-    })
-    
+    send_worker_msg(
+        {
+            "id": "send",
+            "report": report,
+            "context_line_count": globs.context_line_count,
+            "timeout": globs.timeout,
+            "endpoint": globs.endpoint,
+            "tab_width": globs.tab_width,
+            "debug_backtrace": globs.debug_backtrace,
+            "source_code": source_code,
+        }
+    )
+
 
 def send_worker_msg(msg):
     payload = json.dumps(msg, ignore_nan=True).encode("utf-8")
@@ -53,8 +57,6 @@ def create_and_send_report(ex_type, ex_value, ex_traceback):
     report.set_exception(ex_type, ex_value, ex_traceback)
     report.set_attribute("error.type", "Unhandled exception")
     report.send()
-
-
 
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):

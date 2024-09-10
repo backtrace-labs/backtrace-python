@@ -1,4 +1,3 @@
-import threading
 import os
 import sys
 import threading
@@ -9,8 +8,6 @@ from backtracepython.attributes.attribute_manager import attribute_manager
 from backtracepython.utils import python_version
 from backtracepython.version import version_string
 
-next_source_code_id = 1
-print(next_source_code_id)
 
 def add_source_code(source_path, source_code_dict, source_path_dict, line):
     try:
@@ -31,6 +28,7 @@ def add_source_code(source_path, source_code_dict, source_path_dict, line):
         source_code_dict[the_id]["maxLine"] = line
     return the_id
 
+
 def process_frame(tb_frame, line, source_code_dict, source_path_dict):
     source_file = os.path.abspath(tb_frame.f_code.co_filename)
     frame = {
@@ -41,7 +39,6 @@ def process_frame(tb_frame, line, source_code_dict, source_path_dict):
         ),
     }
     return frame
-
 
 
 def get_main_thread():
@@ -55,6 +52,7 @@ def get_main_thread():
             first = thread
     return first
 
+
 def walk_tb_backwards(tb):
     while tb is not None:
         yield tb.tb_frame, tb.tb_lineno
@@ -63,6 +61,7 @@ def walk_tb_backwards(tb):
 
 def walk_tb(tb):
     return reversed(list(walk_tb_backwards(tb)))
+
 
 class BacktraceReport:
     def __init__(self):
@@ -159,4 +158,5 @@ class BacktraceReport:
         if len(self.log_lines) != 0 and "Log" not in self.report["annotations"]:
             self.report["annotations"]["Log"] = self.log_lines
         from backtracepython.client import send_worker_report
+
         send_worker_report(self.report, self.source_code)
