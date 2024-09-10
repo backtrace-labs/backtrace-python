@@ -1,4 +1,4 @@
-from backtracepython import BacktraceReport
+from backtracepython.report import BacktraceReport
 
 report = BacktraceReport()
 
