@@ -5,8 +5,9 @@ import time
 import uuid
 
 from backtracepython.attributes.attribute_manager import attribute_manager
-from backtracepython.utils import python_version
-from backtracepython.version import version_string
+
+from .utils import python_version
+from .version import version_string
 
 
 def add_source_code(source_path, source_code_dict, source_path_dict, line):

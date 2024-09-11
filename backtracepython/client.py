@@ -1,10 +1,12 @@
 import os
-import sys
-import simplejson as json
 import subprocess
+import sys
+
+import simplejson as json
 
 from backtracepython.attributes.attribute_manager import attribute_manager
-from backtracepython.report import BacktraceReport
+
+from .report import BacktraceReport
 
 if sys.version_info.major >= 3:
     from urllib.parse import urlencode

@@ -1,11 +1,10 @@
-from .version import version, version_string
+from .client import finalize, initialize, send_last_exception, send_report
 from .report import BacktraceReport
-from .client import initialize, finalize, finalize, send_last_exception, send_report
+from .version import version, version_string
 
 __all__ = [
     "BacktraceReport",
     "initialize",
-    "finalize",
     "finalize",
     "version",
     "version_string",
