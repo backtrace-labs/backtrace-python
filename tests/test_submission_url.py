@@ -1,4 +1,4 @@
-from backtracepython import construct_submission_url
+from backtracepython.client import construct_submission_url
 
 universe = "test"
 hostname = "https://{}.sp.backtrace.io".format(universe)

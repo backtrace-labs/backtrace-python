@@ -63,3 +63,6 @@ class AttributeManager:
             result.append(LinuxMemoryAttributeProvider())
 
         return result
+
+
+attribute_manager = AttributeManager()
