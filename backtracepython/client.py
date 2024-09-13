@@ -1,7 +1,5 @@
 import sys
 
-import simplejson as json
-
 from backtracepython.attributes.attribute_manager import attribute_manager
 
 from .report import BacktraceReport
@@ -46,7 +44,6 @@ def create_and_send_report(ex_type, ex_value, ex_traceback):
 
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):
-    print("captured unahndled exception")
     if globs.debug_backtrace:
         # Go back to normal exceptions while we do our work here.
         sys.excepthook = globs.next_except_hook
