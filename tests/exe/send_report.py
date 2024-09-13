@@ -1,4 +1,6 @@
-import sys, os
+import os
+import sys
+import time
 
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, root_dir)
@@ -23,3 +25,4 @@ def do_the_thing():
 
 
 do_the_thing()
+time.sleep(1)

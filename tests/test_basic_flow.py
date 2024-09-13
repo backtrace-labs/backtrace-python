@@ -69,7 +69,7 @@ def check_send_report(obj):
 
 def check_threads(obj):
     if sys.version_info.major >= 3:
-        assert len(obj["threads"]) == 4
+        assert len(obj["threads"]) == 5
 
 
 def run_one_test(check_fn, exe_name):

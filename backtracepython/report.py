@@ -11,23 +11,22 @@ from .version import version_string
 
 
 def add_source_code(source_path, source_code_dict, source_path_dict, line):
-    try:
-        the_id = source_path_dict[source_path]
-    except KeyError:
-        the_id = str(uuid.uuid4())
-        source_path_dict[source_path] = the_id
-        source_code_dict[the_id] = {
+
+    if source_path in source_path_dict:
+        source_code_info = source_code_dict[source_path]
+        if line < source_code_info["minLine"]:
+            source_code_info["minLine"] = line
+        if line > source_code_info["maxLine"]:
+            source_code_info["maxLine"] = line
+
+    else:
+        source_code_dict[source_path] = {
             "minLine": line,
             "maxLine": line,
             "path": source_path,
         }
-        return the_id
 
-    if line < source_code_dict[the_id]["minLine"]:
-        source_code_dict[the_id]["minLine"] = line
-    if line > source_code_dict[the_id]["maxLine"]:
-        source_code_dict[the_id]["maxLine"] = line
-    return the_id
+    return source_path
 
 
 def process_frame(tb_frame, line, source_code_dict, source_path_dict):
@@ -35,9 +34,8 @@ def process_frame(tb_frame, line, source_code_dict, source_path_dict):
     frame = {
         "funcName": tb_frame.f_code.co_name,
         "line": line,
-        "sourceCode": add_source_code(
-            source_file, source_code_dict, source_path_dict, line
-        ),
+        "library": source_file,
+        "sourceCode": source_file,
     }
     return frame
 
@@ -70,6 +68,7 @@ class BacktraceReport:
         self.source_code = {}
         self.source_path_dict = {}
         entry_source_code_id = None
+        self.attachments = []
         import __main__
 
         cwd_path = os.path.abspath(os.getcwd())
@@ -155,9 +154,18 @@ class BacktraceReport:
             }
         )
 
+    def add_attachment(self, attachment_path):
+        self.attachments.append(attachment_path)
+
+    def get_attachments(self):
+        return self.attachments
+
+    def get_data(self):
+        return self.report
+
     def send(self):
         if len(self.log_lines) != 0 and "Log" not in self.report["annotations"]:
             self.report["annotations"]["Log"] = self.log_lines
-        from backtracepython.client import send_worker_report
+        from backtracepython.client import send
 
-        send_worker_report(self.report, self.source_code)
+        send(self)

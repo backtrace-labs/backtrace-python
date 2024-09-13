@@ -3,3 +3,5 @@ simplejson==3.19.3
 pytest
 tox
 black; python_version > '3.0'
+requests
+
