@@ -32,7 +32,7 @@ class ReportQueue:
             self.report_queue.task_done()
 
     def add(self, report, attachments):
-        self.report_queue.put((report, attachments))
+        self.report_queue.put_nowait((report, attachments))
 
     # Immediately process the report and skip the queue process
     # Use this method to handle importa data before application exit

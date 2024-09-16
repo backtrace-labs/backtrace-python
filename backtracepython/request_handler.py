@@ -1,4 +1,5 @@
 import os
+import sys
 
 import requests
 import simplejson as json
@@ -20,10 +21,15 @@ class BacktraceRequestHandler:
         files = {"upload_file": payload}
 
         for attachment in attachments:
+            attachment_name = "attachment_" + os.path.basename(attachment)
+
+            if attachment_name in files:
+                continue
+
             if not os.path.exists(attachment):
                 continue
             try:
-                files["attachment_" + os.path.basename(attachment)] = (
+                files[attachment_name] = (
                     attachment,
                     open(attachment, "rb"),
                     "application/octet-stream",
@@ -52,14 +58,11 @@ class BacktraceRequestHandler:
                         response.status_code, response.text
                     )
                 )
-                return None
         except Exception as e:
             self.debug_api("Received submission failure. Reason: {}".format(str(e)))
-        finally:
-            return None
 
     def debug_api(self, message):
         if not self.debug:
             return
 
-        print(message)
+        print(message, file=sys.stderr)
