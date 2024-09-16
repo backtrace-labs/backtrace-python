@@ -30,7 +30,7 @@ class BacktraceRequestHandler:
                 )
             except Exception as e:
                 self.debug_api(
-                    "Cannot add attachment {}. Reason {}".format(attachment, str(e))
+                    "Cannot add attachment {}: {}".format(attachment, str(e))
                 )
                 continue
 
