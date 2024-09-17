@@ -18,7 +18,7 @@ python -m pip install backtracepython
 
 ## Basic Usage
 
-```
+```python
 import backtracepython as bt
 bt.initialize(
     endpoint="https://submit.backtrace.io/{universe}/{token}/json"
@@ -27,20 +27,20 @@ bt.initialize(
 
 ### Sending Reports from Unhandled Exceptions
 
-By default, the backtracepython module will automatically capture unhandled exceptions and create and send error reports from them.  This behavior can be adjusted with the `disable_global_handler` option to `bt.initialize` (see below).
+By default, the `backtracepython` module automatically captures unhandled exceptions and creates and sends error reports from them. This behavior can be adjusted with the `disable_global_handler` option in `bt.initialize` (see below).
 
 ### Sending Reports Manually
 
-You can also send error reports manually within code.  However, in order to get a correct callstack and source code context, you must send an error with a python exception context.  To do this, you can raise a python exception then immediately send a report via the `send_last_exception call`.  A simple example:
+You can also send error reports manually in your code. However, to get a correct callstack and source code context, you must send an error with a Python exception context. To do this, you can raise a Python exception and then immediately send a report using the `send_last_exception` call. Here's an example:
 
-```
+```python
 try:
     raise Exception("This report was sent manually.")
 except:
     bt.send_last_exception()
 ```
 
-## Reference
+## Documentation
 
 ### bt.initialize
 
@@ -101,11 +101,11 @@ error  is an Error object. Backtrace will extract information from this object 
 
 This is the same as report.set_exception(\*sys.exc_info())
 
-`report.log(line) `
+`report.log(line)`
 
 Adds a timestamped log message to the report. Log output is available when you view a report.
 
-`report.send() `
+`report.send()`
 
 Sends the error report to the endpoint specified in initialize.
 
