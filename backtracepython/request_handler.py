@@ -17,7 +17,7 @@ class BacktraceRequestHandler:
     def send(self, report, attachments):
         payload = json.dumps(report, ignore_nan=True, bigint_as_string=True)
         self.debug_api(
-            "Submitting a payload to {},\n {}\n".format(self.submission_url, payload)
+            "Submitting a payload to {},\n {}\n", self.submission_url, payload
         )
 
         files = {"upload_file": payload}
@@ -37,9 +37,7 @@ class BacktraceRequestHandler:
                     "application/octet-stream",
                 )
             except Exception as e:
-                self.debug_api(
-                    "Cannot add attachment {}: {}".format(attachment, str(e))
-                )
+                self.debug_api("Cannot add attachment {}: {}", attachment, str(e))
                 continue
 
         try:
@@ -53,18 +51,18 @@ class BacktraceRequestHandler:
                 if response.status_code != 200:
                     response_body = json.loads(response.text)
                     result_rx = response_body["_rxid"]
-                    self.debug_api("Report available with rxId {}".format(result_rx))
+                    self.debug_api("Report available with rxId {}", result_rx)
                     return result_rx
                 self.debug_api(
-                    "Received invalid status code {}. Data: {}".format(
-                        response.status_code, response.text
-                    )
+                    "Received invalid status code {}. Data: {}",
+                    response.status_code,
+                    response.text,
                 )
         except Exception as e:
-            self.debug_api("Received submission failure. Reason: {}".format(str(e)))
+            self.debug_api("Received submission failure. Reason: {}", str(e))
 
-    def debug_api(self, message):
+    def debug_api(self, message, *args):
         if not self.debug:
             return
 
-        print(message, file=sys.stderr)
+        print(message.format(*args), file=sys.stderr)
