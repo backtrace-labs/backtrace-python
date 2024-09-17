@@ -16,4 +16,4 @@
   - attributes - client specific attributes that will be included every time the report is being generated (#19),
   - attachments - list of attachments paths (#19),
   - collect_source_code - disable collecting source code information for each stack trace (#20),
-  - ignore_ssl_certificate ($19)
+  - ignore_ssl_certificate - if True, the option disables ssl validation (#19).
