@@ -136,6 +136,6 @@ test suite with all of them:
 3. Tag the version in git.
 
 ```
-python2 setup.py bdist_wheel --universal
+python3 setup.py bdist_wheel --universal
 twine upload dist/*
 ```
