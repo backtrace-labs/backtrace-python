@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from cgi import FieldStorage
 
 import simplejson as json
 
@@ -69,7 +70,7 @@ def check_send_report(obj):
 
 def check_threads(obj):
     if sys.version_info.major >= 3:
-        assert len(obj["threads"]) == 4
+        assert len(obj["threads"]) == 5
 
 
 def run_one_test(check_fn, exe_name):
@@ -82,7 +83,13 @@ def run_one_test(check_fn, exe_name):
         def do_POST(self):
             self.send_response(200)
             self.end_headers()
-            payload = self.rfile.read()
+            form = FieldStorage(
+                fp=self.rfile,
+                headers=self.headers,
+                environ={"REQUEST_METHOD": "POST"},
+            )
+
+            payload = form["upload_file"].file.read()
             json_string = payload.decode("utf-8", "strict")
             non_local.json_object = json.loads(json_string)
 

@@ -1,12 +1,11 @@
-import os
-import subprocess
 import sys
-
-import simplejson as json
 
 from backtracepython.attributes.attribute_manager import attribute_manager
 
 from .report import BacktraceReport
+from .report_queue import ReportQueue
+from .request_handler import BacktraceRequestHandler
+from .source_code_handler import SourceCodeHandler
 
 if sys.version_info.major >= 3:
     from urllib.parse import urlencode
@@ -18,47 +17,30 @@ class globs:
     endpoint = None
     next_except_hook = None
     debug_backtrace = False
-    timeout = None
-    tab_width = None
-    attributes = {}
-    context_line_count = None
     worker = None
-
-
-child_py_path = os.path.join(os.path.dirname(__file__), "child.py")
+    attachments = []
+    handler = None
 
 
 def get_attributes():
     return attribute_manager.get()
 
 
-def send_worker_report(report, source_code):
-    send_worker_msg(
-        {
-            "id": "send",
-            "report": report,
-            "context_line_count": globs.context_line_count,
-            "timeout": globs.timeout,
-            "endpoint": globs.endpoint,
-            "tab_width": globs.tab_width,
-            "debug_backtrace": globs.debug_backtrace,
-            "source_code": source_code,
-        }
+def send(report, attachments=[]):
+    if globs.handler is None:
+        return False
+
+    globs.handler.add(
+        report.get_data(), report.get_attachments() + globs.attachments + attachments
     )
-
-
-def send_worker_msg(msg):
-    payload = json.dumps(msg, ignore_nan=True).encode("utf-8")
-    globs.worker.stdin.write(payload)
-    globs.worker.stdin.write("\n".encode("utf-8"))
-    globs.worker.stdin.flush()
+    return True
 
 
 def create_and_send_report(ex_type, ex_value, ex_traceback):
     report = BacktraceReport()
     report.set_exception(ex_type, ex_value, ex_traceback)
     report.set_attribute("error.type", "Unhandled exception")
-    report.send()
+    globs.handler.process(report.get_data(), globs.attachments)
 
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):
@@ -88,17 +70,19 @@ def initialize(**kwargs):
         kwargs["endpoint"], kwargs.get("token", None)
     )
     globs.debug_backtrace = kwargs.get("debug_backtrace", False)
-    globs.timeout = kwargs.get("timeout", 4)
-    globs.tab_width = kwargs.get("tab_width", 8)
-    globs.context_line_count = kwargs.get("context_line_count", 200)
-
+    globs.attachments = kwargs.get("attachments", [])
     attribute_manager.add(kwargs.get("attributes", {}))
-    stdio_value = None if globs.debug_backtrace else subprocess.PIPE
-    globs.worker = subprocess.Popen(
-        [sys.executable, child_py_path],
-        stdin=subprocess.PIPE,
-        stdout=stdio_value,
-        stderr=stdio_value,
+
+    globs.handler = ReportQueue(
+        BacktraceRequestHandler(
+            globs.endpoint,
+            kwargs.get("timeout", 4),
+            kwargs.get("ignore_ssl_certificate", False),
+            globs.debug_backtrace,
+        ),
+        SourceCodeHandler(
+            kwargs.get("tab_width", 8), kwargs.get("context_line_count", 200)
+        ),
     )
 
     disable_global_handler = kwargs.get("disable_global_handler", False)
@@ -123,11 +107,9 @@ def construct_submission_url(endpoint, token):
 
 
 def finalize():
-    send_worker_msg({"id": "terminate"})
-    if not globs.debug_backtrace:
-        globs.worker.stdout.close()
-        globs.worker.stderr.close()
-    globs.worker.wait()
+    if globs.handler is None:
+        return
+    globs.handler.dispose()
 
 
 def send_last_exception(**kwargs):
@@ -139,16 +121,8 @@ def send_last_exception(**kwargs):
     report.send()
 
 
-def make_an_exception():
-    try:
-        raise Exception
-    except:
-        return sys.exc_info()
-
-
 def send_report(msg, **kwargs):
     report = BacktraceReport()
-    report.set_exception(*make_an_exception())
     report.set_dict_attributes(kwargs.get("attributes", {}))
     report.set_dict_annotations(kwargs.get("annotations", {}))
     report.set_attribute("error.message", msg)

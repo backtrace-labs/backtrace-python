@@ -2,7 +2,6 @@
 
 from setuptools import find_packages, setup
 
-
 setup(
     name="backtracepython",
     version="0.3.3",
@@ -12,10 +11,7 @@ setup(
     packages=find_packages(),
     test_suite="tests",
     url="https://github.com/backtrace-labs/backtrace-python",
-    install_requires=[
-        "six",
-        "simplejson",
-    ],
+    install_requires=["six", "simplejson", "requests"],
     extras_require={
         "test": ["pytest"],
     },
