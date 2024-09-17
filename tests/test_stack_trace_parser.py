@@ -45,17 +45,21 @@ def test_main_thread_generation_with_exception():
 
 
 def test_background_thread_stack_trace_generation():
+    if_stop = False
+
     def wait_in_thread():
-        while True:
+        while not if_stop:
             time.sleep(0.1)
 
     def runner():
         wait_in_thread()
 
-    thread = threading.Thread(target=runner, name="runner", daemon=True)
+    thread = threading.Thread(target=runner, name="runner")
     thread.start()
 
     report = BacktraceReport()
     data = report.get_data()
+    if_stop = True
+    thread.join()
     stack_trace = data["threads"][str(thread.ident)]
     assert len(stack_trace) != 0
