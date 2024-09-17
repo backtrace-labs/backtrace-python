@@ -23,6 +23,14 @@ def get_attributes():
     return attribute_manager.get()
 
 
+def set_attribute(key, value):
+    attribute_manager.add({key: value})
+
+
+def set_attributes(attributes):
+    attribute_manager.add(attributes)
+
+
 def send(report, attachments=[]):
     if globs.handler is None:
         return False
