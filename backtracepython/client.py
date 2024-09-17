@@ -88,9 +88,11 @@ def initialize(
             ignore_ssl_certificate,
             globs.debug_backtrace,
         ),
-        SourceCodeHandler(tab_width, context_line_count)
-        if collect_source_code
-        else None,
+        (
+            SourceCodeHandler(tab_width, context_line_count)
+            if collect_source_code
+            else None
+        ),
     )
 
     if not disable_global_handler:
