@@ -121,16 +121,8 @@ def send_last_exception(**kwargs):
     report.send()
 
 
-def make_an_exception():
-    try:
-        raise Exception
-    except:
-        return sys.exc_info()
-
-
 def send_report(msg, **kwargs):
     report = BacktraceReport()
-    report.set_exception(*make_an_exception())
     report.set_dict_attributes(kwargs.get("attributes", {}))
     report.set_dict_annotations(kwargs.get("annotations", {}))
     report.set_attribute("error.message", msg)

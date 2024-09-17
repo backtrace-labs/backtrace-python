@@ -10,77 +10,12 @@ from .utils import python_version
 from .version import version_string
 
 
-def add_source_code(source_path, source_code_dict, source_path_dict, line):
-
-    if source_path in source_path_dict:
-        source_code_info = source_code_dict[source_path]
-        if line < source_code_info["minLine"]:
-            source_code_info["minLine"] = line
-        if line > source_code_info["maxLine"]:
-            source_code_info["maxLine"] = line
-
-    else:
-        source_code_dict[source_path] = {
-            "minLine": line,
-            "maxLine": line,
-            "path": source_path,
-        }
-
-    return source_path
-
-
-def process_frame(tb_frame, line, source_code_dict, source_path_dict):
-    source_file = os.path.abspath(tb_frame.f_code.co_filename)
-    frame = {
-        "funcName": tb_frame.f_code.co_name,
-        "line": line,
-        "library": source_file,
-        "sourceCode": source_file,
-    }
-    return frame
-
-
-def get_main_thread():
-    if sys.version_info.major >= 3:
-        return threading.main_thread()
-    first = None
-    for thread in threading.enumerate():
-        if thread.name == "MainThread":
-            return thread
-        if first is None:
-            first = thread
-    return first
-
-
-def walk_tb_backwards(tb):
-    while tb is not None:
-        yield tb.tb_frame, tb.tb_lineno
-        tb = tb.tb_next
-
-
-def walk_tb(tb):
-    return reversed(list(walk_tb_backwards(tb)))
-
-
 class BacktraceReport:
     def __init__(self):
         self.fault_thread = threading.current_thread()
         self.source_code = {}
         self.source_path_dict = {}
-        entry_source_code_id = None
         self.attachments = []
-        import __main__
-
-        cwd_path = os.path.abspath(os.getcwd())
-        entry_thread = get_main_thread()
-        if hasattr(__main__, "__file__"):
-            entry_source_code_id = (
-                add_source_code(
-                    __main__.__file__, self.source_code, self.source_path_dict, 1
-                )
-                if hasattr(__main__, "__file__")
-                else None
-            )
 
         init_attrs = {"error.type": "Exception"}
         init_attrs.update(attribute_manager.get())
@@ -95,38 +30,87 @@ class BacktraceReport:
             "agent": "backtrace-python",
             "agentVersion": version_string,
             "mainThread": str(self.fault_thread.ident),
-            "entryThread": str(entry_thread.ident),
-            "cwd": cwd_path,
             "attributes": init_attrs,
             "annotations": {
                 "Environment Variables": dict(os.environ),
             },
+            "threads": self.generate_stack_trace(),
         }
-        if entry_source_code_id is not None:
-            self.report["entrySourceCode"] = entry_source_code_id
 
     def set_exception(self, garbage, ex_value, ex_traceback):
         self.report["classifiers"] = [ex_value.__class__.__name__]
         self.report["attributes"]["error.message"] = str(ex_value)
 
+        # update faulting thread with information from the error
+        fault_thread_id = str(self.fault_thread.ident)
+        if not fault_thread_id in self.report["threads"]:
+            self.report["threads"][fault_thread_id] = {
+                "name": self.fault_thread.name,
+                "stack": [],
+                "fault": True,
+            }
+
+        faulting_thread = self.report["threads"][fault_thread_id]
+
+        faulting_thread["stack"] = self.convert_stack_trace(
+            self.traverse_exception_stack(ex_traceback), False
+        )
+        faulting_thread["fault"] = True
+
+    def generate_stack_trace(self):
+        current_frames = sys._current_frames()
         threads = {}
         for thread in threading.enumerate():
-            if thread.ident == self.fault_thread.ident:
-                threads[str(self.fault_thread.ident)] = {
-                    "name": self.fault_thread.name,
-                    "stack": [
-                        process_frame(
-                            frame, line, self.source_code, self.source_path_dict
-                        )
-                        for frame, line in walk_tb(ex_traceback)
-                    ],
-                }
-            else:
-                threads[str(thread.ident)] = {
-                    "name": thread.name,
-                }
+            thread_frame = current_frames.get(thread.ident)
+            is_main_thread = thread.name == "MainThread"
+            threads[str(thread.ident)] = {
+                "name": thread.name,
+                "stack": self.convert_stack_trace(
+                    self.traverse_process_thread_stack(thread_frame), is_main_thread
+                ),
+                "fault": is_main_thread,
+            }
 
-        self.report["threads"] = threads
+        return threads
+
+    def traverse_exception_stack(self, traceback):
+        stack = []
+        while traceback:
+            stack.append({"frame": traceback.tb_frame, "line": traceback.tb_lineno})
+            traceback = traceback.tb_next
+        return reversed(stack)
+
+    def traverse_process_thread_stack(self, thread_frame):
+        stack = []
+        while thread_frame:
+            stack.append({"frame": thread_frame, "line": thread_frame.f_lineno})
+            thread_frame = thread_frame.f_back
+        return stack
+
+    def convert_stack_trace(self, thread_stack_trace, skip_backtrace_module):
+        stack_trace = []
+
+        for thread_stack_frame in thread_stack_trace:
+            # do not generate frames from our modules when we're reporting messages
+            thread_frame = thread_stack_frame["frame"]
+            if skip_backtrace_module:
+                module = thread_frame.f_globals.get("__name__")
+
+                if module is not None and module.startswith("backtracepython"):
+                    continue
+
+            source_file = os.path.abspath(thread_frame.f_code.co_filename)
+
+            stack_trace.append(
+                {
+                    "funcName": thread_frame.f_code.co_name,
+                    "line": thread_frame.f_lineno,
+                    "library": source_file,
+                    "sourceCode": source_file,
+                }
+            )
+
+        return stack_trace
 
     def capture_last_exception(self):
         self.set_exception(*sys.exc_info())
