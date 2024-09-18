@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="backtracepython",
-    version="0.3.3",
+    version="0.4.0",
     description="Backtrace.io error reporting tool for Python",
     author="Backtrace.io",
     author_email="team@backtrace.io",
