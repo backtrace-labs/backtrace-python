@@ -8,7 +8,7 @@ else:
 
 
 class ReportQueue:
-    def __init__(self, request_handler, source_code_handler):
+    def __init__(self, request_handler, source_code_handler=None):
         self.request_handler = request_handler
         self.source_code_handler = source_code_handler
 
@@ -37,7 +37,8 @@ class ReportQueue:
     # Immediately process the report and skip the queue process
     # Use this method to handle importa data before application exit
     def process(self, report, attachments):
-        self.source_code_handler.collect(report)
+        if self.source_code_handler is not None:
+            self.source_code_handler.collect(report)
         self.request_handler.send(report, attachments)
 
     def __del__(self):

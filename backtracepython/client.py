@@ -14,10 +14,7 @@ else:
 
 
 class globs:
-    endpoint = None
     next_except_hook = None
-    debug_backtrace = False
-    worker = None
     attachments = []
     handler = None
 
@@ -40,7 +37,8 @@ def create_and_send_report(ex_type, ex_value, ex_traceback):
     report = BacktraceReport()
     report.set_exception(ex_type, ex_value, ex_traceback)
     report.set_attribute("error.type", "Unhandled exception")
-    globs.handler.process(report.get_data(), globs.attachments)
+    if globs.handler:
+        globs.handler.process(report.get_data(), globs.attachments)
 
 
 def bt_except_hook(ex_type, ex_value, ex_traceback):
@@ -65,27 +63,38 @@ def bt_except_hook(ex_type, ex_value, ex_traceback):
     globs.next_except_hook(ex_type, ex_value, ex_traceback)
 
 
-def initialize(**kwargs):
-    globs.endpoint = construct_submission_url(
-        kwargs["endpoint"], kwargs.get("token", None)
-    )
-    globs.debug_backtrace = kwargs.get("debug_backtrace", False)
-    globs.attachments = kwargs.get("attachments", [])
-    attribute_manager.add(kwargs.get("attributes", {}))
+def initialize(
+    endpoint,
+    token=None,
+    debug_backtrace=False,
+    attachments=[],
+    attributes={},
+    timeout=4,
+    ignore_ssl_certificate=False,
+    tab_width=8,
+    context_line_count=200,
+    collect_source_code=True,
+    disable_global_handler=False,
+):
+    globs.endpoint = construct_submission_url(endpoint, token)
+    globs.debug_backtrace = debug_backtrace
+    globs.attachments = attachments
+    attribute_manager.add(attributes)
 
     globs.handler = ReportQueue(
         BacktraceRequestHandler(
             globs.endpoint,
-            kwargs.get("timeout", 4),
-            kwargs.get("ignore_ssl_certificate", False),
+            timeout,
+            ignore_ssl_certificate,
             globs.debug_backtrace,
         ),
-        SourceCodeHandler(
-            kwargs.get("tab_width", 8), kwargs.get("context_line_count", 200)
+        (
+            SourceCodeHandler(tab_width, context_line_count)
+            if collect_source_code
+            else None
         ),
     )
 
-    disable_global_handler = kwargs.get("disable_global_handler", False)
     if not disable_global_handler:
         globs.next_except_hook = sys.excepthook
         sys.excepthook = bt_except_hook
