@@ -48,7 +48,7 @@ class BacktraceRequestHandler:
                 verify=not self.ignore_ssl_certificate,
                 timeout=self.timeout,
             ) as response:
-                if response.status_code != 200:
+                if response.status_code == 200:
                     response_body = json.loads(response.text)
                     result_rx = response_body["_rxid"]
                     self.debug_api("Report available with rxId {}", result_rx)
