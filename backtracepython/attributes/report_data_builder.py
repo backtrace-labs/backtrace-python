@@ -1,5 +1,8 @@
+import sys
+
 class ReportDataBuilder:
-    primitive_types = (int, float, str, bool, bytes, type(None), unicode)
+     
+    primitive_types = (int, float, bool, type(None), str) if sys.version_info.major >= 3 else (int, float, bool, type(None), str, unicode)
 
     @staticmethod
     def get(provider_attributes):
