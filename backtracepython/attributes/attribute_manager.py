@@ -22,23 +22,20 @@ class AttributeManager:
         attributes = {}
         annotations = {}
         for attribute_provider in self.attribute_providers:
-
-            generated_attributes, generated_annotations = ReportDataBuilder.get(
-                self.try_get(attribute_provider)
-            )
-            attributes.update(generated_attributes)
-            annotations.update(generated_annotations)
+            try:
+                provider_attributes = attribute_provider.get()
+                generated_attributes, generated_annotations = ReportDataBuilder.get(
+                    provider_attributes
+                )
+                attributes.update(generated_attributes)
+                annotations.update(generated_annotations)
+            except:
+                continue
 
         return attributes, annotations
 
     def add(self, attributes):
         self.attribute_providers.append(UserAttributeProvider(attributes))
-
-    def try_get(self, provider):
-        try:
-            return provider.get()
-        except:
-            return {}
 
     def get_predefined_scoped_attribute_providers(self):
         return [
