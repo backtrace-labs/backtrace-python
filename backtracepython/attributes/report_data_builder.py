@@ -19,7 +19,6 @@ class ReportDataBuilder:
             if isinstance(value, ReportDataBuilder.primitive_types):
                 attributes[key] = value
             else:
-                print("Adding {} as an annotation. Type {}".format(key, type(value)))
                 annotations[key] = value
 
         # Return both dictionaries
