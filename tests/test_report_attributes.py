@@ -1,4 +1,4 @@
-from backtracepython.client import set_attribute
+from backtracepython.client import set_attribute, set_attributes
 from backtracepython.report import BacktraceReport
 
 report = BacktraceReport()
@@ -61,3 +61,27 @@ def test_override_default_client_attribute_by_report():
     new_report.set_attribute(test_attribute, test_attribute_value)
     attributes = new_report.get_attributes()
     assert attributes["guid"] == test_attribute_value
+
+
+def test_annotation_in_annotations_data():
+    annotation_name = "annotation_name"
+    annotation = {"name": "foo", "surname": "bar"}
+
+    set_attribute(annotation_name, annotation)
+
+    new_report = BacktraceReport()
+    report_annotation = new_report.get_annotations()
+    assert report_annotation[annotation_name] == annotation
+
+
+def test_override_client_annotation():
+    annotation_name = "annotation_name"
+    annotation = {"name": "foo", "surname": "bar"}
+    override_report_annotation = {"name": "foo", "surname": "bar", "age": "unknown"}
+
+    set_attribute(annotation_name, annotation)
+
+    new_report = BacktraceReport()
+    new_report.set_annotation(annotation_name, override_report_annotation)
+    report_annotation = new_report.get_annotations()
+    assert report_annotation[annotation_name] == override_report_annotation

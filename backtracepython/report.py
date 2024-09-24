@@ -17,8 +17,8 @@ class BacktraceReport:
         self.source_path_dict = {}
         self.attachments = []
 
-        init_attrs = {"error.type": "Exception"}
-        init_attrs.update(attribute_manager.get())
+        attributes, annotations = attribute_manager.get()
+        attributes.update({"error.type": "Exception"})
 
         self.log_lines = []
 
@@ -30,10 +30,8 @@ class BacktraceReport:
             "agent": "backtrace-python",
             "agentVersion": version_string,
             "mainThread": str(self.fault_thread.ident),
-            "attributes": init_attrs,
-            "annotations": {
-                "Environment Variables": dict(os.environ),
-            },
+            "attributes": attributes,
+            "annotations": annotations,
             "threads": self.generate_stack_trace(),
         }
 
@@ -123,6 +121,9 @@ class BacktraceReport:
 
     def set_annotation(self, key, value):
         self.report["annotations"][key] = value
+
+    def get_annotations(self):
+        return self.report["annotations"]
 
     def get_attributes(self):
         return self.report["attributes"]

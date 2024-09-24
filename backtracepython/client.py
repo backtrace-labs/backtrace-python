@@ -20,7 +20,13 @@ class globs:
 
 
 def get_attributes():
-    return attribute_manager.get()
+    attributes, _ = attribute_manager.get()
+    return attributes
+
+
+def get_annotations():
+    _, annotations = attribute_manager.get()
+    return annotations
 
 
 def set_attribute(key, value):
