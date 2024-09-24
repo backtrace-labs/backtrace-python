@@ -3,6 +3,8 @@ import sys
 
 class ReportDataBuilder:
 
+    # unicode is not available in Python3. However due to the Python2 support
+    # We need to use it to verify primitive values.
     primitive_types = (
         (int, float, bool, type(None), str)
         if sys.version_info.major >= 3
