@@ -5,7 +5,7 @@ from .linux_memory_attribute_provider import LinuxMemoryAttributeProvider
 from .machine_attribute_provider import MachineAttributeProvider
 from .machineId_attribute_provider import MachineIdAttributeProvider
 from .process_attribute_provider import ProcessAttributeProvider
-from .report_data_builder import ReportDataBuilder
+from .report_data_builder import get_report_attributes
 from .session_attribute_provider import SessionAttributeProvider
 from .system_attribute_provider import SystemAttributeProvider
 from .user_attribute_provider import UserAttributeProvider
@@ -24,7 +24,7 @@ class AttributeManager:
         for attribute_provider in self.attribute_providers:
             try:
                 provider_attributes = attribute_provider.get()
-                generated_attributes, generated_annotations = ReportDataBuilder.get(
+                generated_attributes, generated_annotations = get_report_attributes(
                     provider_attributes
                 )
                 attributes.update(generated_attributes)
