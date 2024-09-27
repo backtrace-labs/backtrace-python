@@ -43,6 +43,7 @@ class ReportQueue:
         self.request_handler.send(report, attachments)
 
     def finish(self):
+        # Put a sentinel value to stop the worker thread
         self.report_queue.put_nowait(None)
         self.report_queue.join()
         self.worker_thread.join(timeout=self.exit_timeout)
