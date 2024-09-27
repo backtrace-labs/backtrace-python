@@ -8,9 +8,10 @@ else:
 
 
 class ReportQueue:
-    def __init__(self, request_handler, source_code_handler=None):
+    def __init__(self, request_handler, exit_timeout=None, source_code_handler=None):
         self.request_handler = request_handler
         self.source_code_handler = source_code_handler
+        self.exit_timeout = exit_timeout
 
         # report submission tasks queue
         self.report_queue = queue.Queue()
@@ -24,7 +25,7 @@ class ReportQueue:
     def _worker(self):
         while True:
             report_data = self.report_queue.get()
-            if report_data is None or self.active == False:
+            if report_data is None:
                 self.report_queue.task_done()
                 break
             report, attachments = report_data
@@ -41,12 +42,7 @@ class ReportQueue:
             self.source_code_handler.collect(report)
         self.request_handler.send(report, attachments)
 
-    def __del__(self):
-        self.dispose()
-
-    def dispose(self):
-        # Put a sentinel value to stop the worker thread
-        self.active = False
+    def finish(self):
         self.report_queue.put_nowait(None)
         self.report_queue.join()
-        self.worker_thread.join()
+        self.worker_thread.join(timeout=self.exit_timeout)

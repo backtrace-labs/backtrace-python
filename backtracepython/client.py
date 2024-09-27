@@ -1,3 +1,4 @@
+import atexit
 import sys
 
 from backtracepython.attributes.attribute_manager import attribute_manager
@@ -89,6 +90,7 @@ def initialize(
     context_line_count=200,
     collect_source_code=True,
     disable_global_handler=False,
+    exit_timeout=5,
 ):
     globs.endpoint = construct_submission_url(endpoint, token)
     globs.debug_backtrace = debug_backtrace
@@ -102,6 +104,7 @@ def initialize(
             ignore_ssl_certificate,
             globs.debug_backtrace,
         ),
+        exit_timeout,
         (
             SourceCodeHandler(tab_width, context_line_count)
             if collect_source_code
@@ -112,6 +115,9 @@ def initialize(
     if not disable_global_handler:
         globs.next_except_hook = sys.excepthook
         sys.excepthook = bt_except_hook
+
+    if exit_timeout != 0:
+        atexit.register(finalize)
 
 
 def construct_submission_url(endpoint, token):
@@ -132,7 +138,8 @@ def construct_submission_url(endpoint, token):
 def finalize():
     if globs.handler is None:
         return
-    globs.handler.dispose()
+    globs.handler.finish()
+    globs.handler = None
 
 
 def send_last_exception(**kwargs):
