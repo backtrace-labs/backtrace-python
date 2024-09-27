@@ -116,7 +116,7 @@ def initialize(
         globs.next_except_hook = sys.excepthook
         sys.excepthook = bt_except_hook
 
-    if exit_timeout != 0:
+    if exit_timeout > 0:
         atexit.register(finalize)
 
 
