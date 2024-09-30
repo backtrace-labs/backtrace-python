@@ -4,7 +4,7 @@
 
 ## Documentation
 
-https://support.backtrace.io/hc/en-us/articles/360040105992-Python-Integration-Guide
+https://docs.saucelabs.com/error-reporting/language-integrations/python/
 
 ## Installation
 
@@ -12,13 +12,13 @@ https://support.backtrace.io/hc/en-us/articles/360040105992-Python-Integration-G
 
 This module supports Python 2, Python 3, and PyPy.
 
-```
+```bash
 python -m pip install backtracepython
 ```
 
 ## Basic Usage
 
-```python
+```bash
 import backtracepython as bt
 bt.initialize(
     endpoint="https://submit.backtrace.io/{universe}/{token}/json"
@@ -57,12 +57,13 @@ except:
 - context_line_count  - Defaults to 200 . When an error is reported, this many lines above and below each stack function are included in the report.
 - tab_width  - Defaults to 8.  If there are any hard tabs in the source code, it is unclear how many spaces they should be indented to correctly display the source code. Therefore the error report can override this number to specify how many spaces a hard tab should be represented by when viewing source code.
 - collect_source_code - Default to True. By default Backtrace client collects corresponded source code and send it with the report. If set to False, the source code will not be collected.
+- exit_timeout - Default to 4. Backtrace sends data asynchronously in the background thread. The exit_timeout describes how many time the thread has to finish working before application exit.
 
 ### bt.BacktraceReport
 
 Create a report object that you can later choose whether or not to send. This may be useful to track something like a request.
 
-`report.set_attribute(key, value) `
+`report.set_attribute(key, value)`
 Adds an attribute to a specific report. Valid types for value are str, float, int, and bool.
 Attributes are indexed and searchable. See also `addAnnotation`
 
@@ -70,26 +71,26 @@ Attributes are indexed and searchable. See also `addAnnotation`
 
 Adds all key-value pairs of dict into the report recursively.
 
-`report.get_attributes() `
+`report.get_attributes()`
 
 Returns all report attributes.
 
-`report.set_annotation(key, value) `
+`report.set_annotation(key, value)`
 
 Adds an annotation to a specific report. Annotations, unlike attributes, are not indexed and searchable. However, they are available for inspection when you view a specific report.
 
 key - String which is the name of the annotation.
 value - Any type which is JSON-serializable.
 
-`report.set_dict_annotations(dict) `
+`report.set_dict_annotations(dict)`
 
 Adds all key-value pairs of dict into the report.
 
-`report.add_attachment(attachment_path) `
+`report.add_attachment(attachment_path)`
 
 Adds an attachment to the report.
 
-`report.get_attachments() `
+`report.get_attachments()`
 
 Returns a list of attachment paths.
 
@@ -97,7 +98,7 @@ Returns a list of attachment paths.
 
 error  is an Error object. Backtrace will extract information from this object such as the error message and stack trace and send this information along with the report.
 
-`report.capture_last_exception() `
+`report.capture_last_exception()`
 
 This is the same as report.set_exception(\*sys.exc_info())
 
@@ -118,7 +119,7 @@ Sends the error report to the endpoint specified in initialize.
 
 To run the test suite:
 
-```
+```bash
 pytest
 ```
 
@@ -135,7 +136,7 @@ test suite with all of them:
 2. Update version number in backtracepython module.
 3. Tag the version in git.
 
-```
+```bash
 python3 setup.py bdist_wheel --universal
 twine upload dist/*
 ```
