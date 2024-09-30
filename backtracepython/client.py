@@ -90,7 +90,7 @@ def initialize(
     context_line_count=200,
     collect_source_code=True,
     disable_global_handler=False,
-    exit_timeout=5,
+    exit_timeout=4,
 ):
     globs.endpoint = construct_submission_url(endpoint, token)
     globs.debug_backtrace = debug_backtrace
