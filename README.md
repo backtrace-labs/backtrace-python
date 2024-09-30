@@ -57,6 +57,7 @@ except:
 - context_line_count  - Defaults to 200 . When an error is reported, this many lines above and below each stack function are included in the report.
 - tab_width  - Defaults to 8.  If there are any hard tabs in the source code, it is unclear how many spaces they should be indented to correctly display the source code. Therefore the error report can override this number to specify how many spaces a hard tab should be represented by when viewing source code.
 - collect_source_code - Default to True. By default Backtrace client collects corresponded source code and send it with the report. If set to False, the source code will not be collected.
+- exit_timeout - Default to 4. Backtrace sends data asynchronously in the background thread. The exit_timeout describes how many time the thread has to finish working before application exit.
 
 ### bt.BacktraceReport
 
