@@ -1,3 +1,9 @@
+# Version 0.4.1
+
+- Added support for annotations in the client API (#23),
+- Dropped environment variable as a default annotation (#23),
+- Added an exit_timeout parameter, that allows to wait until events are processed before exit (#24).
+
 # Version 0.4.0
 
 - Changed a submission flow - from spawning and sending data from a process to background thread(#19).

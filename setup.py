@@ -1,19 +1,36 @@
 #!/usr/bin/env python
 
+import os
+
 from setuptools import find_packages, setup
+
+current_directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(current_directory, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
+
 
 setup(
     name="backtracepython",
-    version="0.4.0",
+    version="0.4.1",
     description="Backtrace.io error reporting tool for Python",
     author="Backtrace.io",
     author_email="team@backtrace.io",
     packages=find_packages(),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    include_package_data=True,
+    license="MIT",
     test_suite="tests",
     url="https://github.com/backtrace-labs/backtrace-python",
     install_requires=["six", "simplejson", "requests"],
     extras_require={
         "test": ["pytest"],
+    },
+    project_urls={
+        "Homepage": "https://backtrace.io",
+        "Source": "https://github.com/backtrace-labs/backtrace-python",
+        "Changelog": "https://github.com/backtrace-labs/backtrace-python/blob/master/CHANGELOG.md",
+        "Documentation": "https://docs.saucelabs.com/error-reporting/language-integrations/python/",
     },
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4",
     classifiers=[
