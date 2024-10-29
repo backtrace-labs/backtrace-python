@@ -13,9 +13,12 @@ from .version import version_string
 class BacktraceReport:
     def __init__(self):
         self.fault_thread = threading.current_thread()
+        self.faulting_thread_id = str(self.fault_thread.ident)
         self.source_code = {}
         self.source_path_dict = {}
         self.attachments = []
+
+        stack_trace = self.generate_stack_trace()
 
         attributes, annotations = attribute_manager.get()
         attributes.update({"error.type": "Exception"})
@@ -29,15 +32,19 @@ class BacktraceReport:
             "langVersion": python_version,
             "agent": "backtrace-python",
             "agentVersion": version_string,
-            "mainThread": str(self.fault_thread.ident),
+            "mainThread": self.faulting_thread_id,
             "attributes": attributes,
             "annotations": annotations,
-            "threads": self.generate_stack_trace(),
+            "threads": stack_trace,
         }
 
     def set_exception(self, garbage, ex_value, ex_traceback):
         self.report["classifiers"] = [ex_value.__class__.__name__]
         self.report["attributes"]["error.message"] = str(ex_value)
+
+        # reset faulting thread id and make sure the faulting thread is not listed twice
+        self.report["threads"][self.faulting_thread_id]["fault"] = False
+
 
         # update faulting thread with information from the error
         fault_thread_id = str(self.fault_thread.ident)
@@ -54,6 +61,9 @@ class BacktraceReport:
             self.traverse_exception_stack(ex_traceback), False
         )
         faulting_thread["fault"] = True
+        self.faulting_thread_id = fault_thread_id
+        self.report["mainThread"] = self.faulting_thread_id
+
 
     def generate_stack_trace(self):
         current_frames = sys._current_frames()
@@ -61,13 +71,16 @@ class BacktraceReport:
         for thread in threading.enumerate():
             thread_frame = current_frames.get(thread.ident)
             is_main_thread = thread.name == "MainThread"
-            threads[str(thread.ident)] = {
+            thread_id = str(thread.ident)
+            threads[thread_id] = {
                 "name": thread.name,
                 "stack": self.convert_stack_trace(
                     self.traverse_process_thread_stack(thread_frame), is_main_thread
                 ),
                 "fault": is_main_thread,
             }
+            if is_main_thread:
+                self.faulting_thread_id = thread_id
 
         return threads
 
