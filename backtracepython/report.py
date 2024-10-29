@@ -65,11 +65,14 @@ class BacktraceReport:
         self.faulting_thread_id = fault_thread_id
         self.report["mainThread"] = self.faulting_thread_id
 
-        self.set_annotation("Exception", {
-            "type": exception_classifier,
-            "message": str(ex_value),
-            "traceback": traceback.format_tb(ex_traceback)
-        })
+        self.set_annotation(
+            "Exception",
+            {
+                "type": exception_classifier,
+                "message": str(ex_value),
+                "traceback": traceback.format_tb(ex_traceback),
+            },
+        )
 
     def capture_last_exception(self):
         self.set_exception(*sys.exc_info())
