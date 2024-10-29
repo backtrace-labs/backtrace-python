@@ -85,3 +85,18 @@ def test_override_client_annotation():
     new_report.set_annotation(annotation_name, override_report_annotation)
     report_annotation = new_report.get_annotations()
     assert report_annotation[annotation_name] == override_report_annotation
+
+
+def test_set_exception_annotation():
+
+    def open_file(name):
+        open(name).read()
+
+    try:
+        open_file("not existing file")
+    except:
+        report = BacktraceReport()
+        report.capture_last_exception()
+        annotations = report.get_annotations()
+        assert annotations["Exception"] is not None
+        
