@@ -18,7 +18,7 @@ class BacktraceReport:
         self.source_path_dict = {}
         self.attachments = []
 
-        stack_trace = self.generate_stack_trace()
+        stack_trace = self.__generate_stack_trace()
 
         attributes, annotations = attribute_manager.get()
         attributes.update({"error.type": "Exception"})
@@ -56,14 +56,14 @@ class BacktraceReport:
 
         faulting_thread = self.report["threads"][fault_thread_id]
 
-        faulting_thread["stack"] = self.convert_stack_trace(
-            self.traverse_exception_stack(ex_traceback), False
+        faulting_thread["stack"] = self.__convert_stack_trace(
+            self.__traverse_exception_stack(ex_traceback), False
         )
         faulting_thread["fault"] = True
         self.faulting_thread_id = fault_thread_id
         self.report["mainThread"] = self.faulting_thread_id
 
-    def generate_stack_trace(self):
+    def __generate_stack_trace(self):
         current_frames = sys._current_frames()
         threads = {}
         for thread in threading.enumerate():
@@ -72,8 +72,8 @@ class BacktraceReport:
             thread_id = str(thread.ident)
             threads[thread_id] = {
                 "name": thread.name,
-                "stack": self.convert_stack_trace(
-                    self.traverse_process_thread_stack(thread_frame), is_main_thread
+                "stack": self.__convert_stack_trace(
+                    self.__traverse_process_thread_stack(thread_frame), is_main_thread
                 ),
                 "fault": is_main_thread,
             }
@@ -82,21 +82,21 @@ class BacktraceReport:
 
         return threads
 
-    def traverse_exception_stack(self, traceback):
+    def __traverse_exception_stack(self, traceback):
         stack = []
         while traceback:
             stack.append({"frame": traceback.tb_frame, "line": traceback.tb_lineno})
             traceback = traceback.tb_next
         return reversed(stack)
 
-    def traverse_process_thread_stack(self, thread_frame):
+    def __traverse_process_thread_stack(self, thread_frame):
         stack = []
         while thread_frame:
             stack.append({"frame": thread_frame, "line": thread_frame.f_lineno})
             thread_frame = thread_frame.f_back
         return stack
 
-    def convert_stack_trace(self, thread_stack_trace, skip_backtrace_module):
+    def __convert_stack_trace(self, thread_stack_trace, skip_backtrace_module):
         stack_trace = []
 
         for thread_stack_frame in thread_stack_trace:
