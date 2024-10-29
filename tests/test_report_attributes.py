@@ -99,4 +99,3 @@ def test_set_exception_annotation():
         report.capture_last_exception()
         annotations = report.get_annotations()
         assert annotations["Exception"] is not None
-        
