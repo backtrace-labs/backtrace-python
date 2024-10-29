@@ -44,6 +44,39 @@ def test_main_thread_generation_with_exception():
         assert len(stack_trace["stack"]) == expected_number_of_frames
 
 
+def test_stack_trace_generation_from_background_thread():
+    background_thread_name = "test_background"
+    data_container = []
+
+    def throw_in_background():
+        try:
+            failing_function()
+        except:
+            report = BacktraceReport()
+            report.capture_last_exception()
+            data = report.get_data()
+            data_container.append(data)
+
+    thread = threading.Thread(target=throw_in_background, name=background_thread_name)
+    thread.start()
+    thread.join()
+    if data_container:
+        data = data_container[0]
+        faulting_thread = data["threads"][data["mainThread"]]
+        assert faulting_thread["name"] != "MainThread"
+        assert faulting_thread["name"] == background_thread_name
+        assert faulting_thread["fault"] == True
+        # make sure other threads are not marked as faulting threads
+        for thread_id in data["threads"]:
+            thread = data["threads"][thread_id]
+            if thread["name"] == background_thread_name:
+                continue
+            assert thread["fault"] == False
+
+    else:
+        assert False
+
+
 def test_background_thread_stack_trace_generation():
     if_stop = False
 
