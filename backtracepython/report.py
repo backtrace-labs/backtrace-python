@@ -63,6 +63,51 @@ class BacktraceReport:
         self.faulting_thread_id = fault_thread_id
         self.report["mainThread"] = self.faulting_thread_id
 
+    def capture_last_exception(self):
+        self.set_exception(*sys.exc_info())
+
+    def set_attribute(self, key, value):
+        self.report["attributes"][key] = value
+
+    def set_dict_attributes(self, target_dict):
+        self.report["attributes"].update(target_dict)
+
+    def set_annotation(self, key, value):
+        self.report["annotations"][key] = value
+
+    def get_annotations(self):
+        return self.report["annotations"]
+
+    def get_attributes(self):
+        return self.report["attributes"]
+
+    def set_dict_annotations(self, target_dict):
+        self.report["annotations"].update(target_dict)
+
+    def log(self, line):
+        self.log_lines.append(
+            {
+                "ts": time.time(),
+                "msg": line,
+            }
+        )
+
+    def add_attachment(self, attachment_path):
+        self.attachments.append(attachment_path)
+
+    def get_attachments(self):
+        return self.attachments
+
+    def get_data(self):
+        return self.report
+
+    def send(self):
+        if len(self.log_lines) != 0 and "Log" not in self.report["annotations"]:
+            self.report["annotations"]["Log"] = self.log_lines
+        from backtracepython.client import send
+
+        send(self)
+
     def __generate_stack_trace(self):
         current_frames = sys._current_frames()
         threads = {}
@@ -120,48 +165,3 @@ class BacktraceReport:
             )
 
         return stack_trace
-
-    def capture_last_exception(self):
-        self.set_exception(*sys.exc_info())
-
-    def set_attribute(self, key, value):
-        self.report["attributes"][key] = value
-
-    def set_dict_attributes(self, target_dict):
-        self.report["attributes"].update(target_dict)
-
-    def set_annotation(self, key, value):
-        self.report["annotations"][key] = value
-
-    def get_annotations(self):
-        return self.report["annotations"]
-
-    def get_attributes(self):
-        return self.report["attributes"]
-
-    def set_dict_annotations(self, target_dict):
-        self.report["annotations"].update(target_dict)
-
-    def log(self, line):
-        self.log_lines.append(
-            {
-                "ts": time.time(),
-                "msg": line,
-            }
-        )
-
-    def add_attachment(self, attachment_path):
-        self.attachments.append(attachment_path)
-
-    def get_attachments(self):
-        return self.attachments
-
-    def get_data(self):
-        return self.report
-
-    def send(self):
-        if len(self.log_lines) != 0 and "Log" not in self.report["annotations"]:
-            self.report["annotations"]["Log"] = self.log_lines
-        from backtracepython.client import send
-
-        send(self)
