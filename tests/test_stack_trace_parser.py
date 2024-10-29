@@ -47,6 +47,7 @@ def test_main_thread_generation_with_exception():
 def test_stack_trace_generation_from_background_thread():
     background_thread_name = "test_background"
     data_container = []
+
     def throw_in_background():
         try:
             failing_function()
@@ -55,8 +56,6 @@ def test_stack_trace_generation_from_background_thread():
             report.capture_last_exception()
             data = report.get_data()
             data_container.append(data)
-
-
 
     thread = threading.Thread(target=throw_in_background, name=background_thread_name)
     thread.start()
@@ -76,6 +75,7 @@ def test_stack_trace_generation_from_background_thread():
 
     else:
         assert False
+
 
 def test_background_thread_stack_trace_generation():
     if_stop = False

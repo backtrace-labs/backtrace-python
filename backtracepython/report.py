@@ -45,7 +45,6 @@ class BacktraceReport:
         # reset faulting thread id and make sure the faulting thread is not listed twice
         self.report["threads"][self.faulting_thread_id]["fault"] = False
 
-
         # update faulting thread with information from the error
         fault_thread_id = str(self.fault_thread.ident)
         if not fault_thread_id in self.report["threads"]:
@@ -63,7 +62,6 @@ class BacktraceReport:
         faulting_thread["fault"] = True
         self.faulting_thread_id = fault_thread_id
         self.report["mainThread"] = self.faulting_thread_id
-
 
     def generate_stack_trace(self):
         current_frames = sys._current_frames()
