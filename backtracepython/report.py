@@ -3,6 +3,7 @@ import sys
 import threading
 import time
 import uuid
+import traceback
 
 from backtracepython.attributes.attribute_manager import attribute_manager
 
@@ -39,7 +40,8 @@ class BacktraceReport:
         }
 
     def set_exception(self, garbage, ex_value, ex_traceback):
-        self.report["classifiers"] = [ex_value.__class__.__name__]
+        exception_classifier = ex_value.__class__.__name__
+        self.report["classifiers"] = [exception_classifier]
         self.report["attributes"]["error.message"] = str(ex_value)
 
         # reset faulting thread id and make sure the faulting thread is not listed twice
@@ -62,6 +64,15 @@ class BacktraceReport:
         faulting_thread["fault"] = True
         self.faulting_thread_id = fault_thread_id
         self.report["mainThread"] = self.faulting_thread_id
+
+        self.set_annotation(
+            "Exception",
+            {
+                "type": exception_classifier,
+                "message": str(ex_value),
+                "traceback": traceback.format_tb(ex_traceback),
+            },
+        )
 
     def capture_last_exception(self):
         self.set_exception(*sys.exc_info())
