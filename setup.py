@@ -11,7 +11,7 @@ with open(os.path.join(current_directory, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="backtracepython",
-    version="0.4.1",
+    version="0.4.2",
     description="Backtrace.io error reporting tool for Python",
     author="Backtrace.io",
     author_email="team@backtrace.io",

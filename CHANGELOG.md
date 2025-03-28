@@ -1,3 +1,8 @@
+# Version 0.4.2
+
+- Fixed a bug that can mark 2+ threads as a faulting thread (#26),
+- Added error annotations to the error reports (#27).
+
 # Version 0.4.1
 
 - Added support for annotations in the client API (#23),
