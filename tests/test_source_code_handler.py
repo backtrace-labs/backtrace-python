@@ -50,7 +50,7 @@ def test_collect_keeps_readable_sources(tmp_path):
 
 
 def test_collect_mixed_readable_and_unreadable(tmp_path):
-    """Mix of existing and missing files — only readable ones should survive."""
+    """Mix of existing and missing files"""
     source_file = tmp_path / "exists.py"
     source_file.write_text("foobarbaz")
 
