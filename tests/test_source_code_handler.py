@@ -4,8 +4,7 @@ from backtracepython.source_code_handler import SourceCodeHandler
 def make_report(source_paths):
     """Build a minimal report whose main thread stack references the given file paths."""
     stack = [
-        {"sourceCode": path, "line": 10, "funcName": "test"}
-        for path in source_paths
+        {"sourceCode": path, "line": 10, "funcName": "test"} for path in source_paths
     ]
     return {
         "mainThread": "main",
@@ -22,10 +21,12 @@ def test_collect_removes_unreadable_sources_without_runtime_error():
     entries from the source_code dict while iterating over it.
     """
     handler = SourceCodeHandler(tab_width=4, context_line_count=3)
-    report = make_report([
-        "/nonexistent/path/a.py",
-        "/nonexistent/path/b.py",
-    ])
+    report = make_report(
+        [
+            "/nonexistent/path/a.py",
+            "/nonexistent/path/b.py",
+        ]
+    )
 
     # Before the fix this raised:
     #   RuntimeError: dictionary changed size during iteration
@@ -54,11 +55,13 @@ def test_collect_mixed_readable_and_unreadable(tmp_path):
     source_file.write_text("a = 1\nb = 2\n" * 10)
 
     handler = SourceCodeHandler(tab_width=4, context_line_count=3)
-    report = make_report([
-        "/nonexistent/path/missing.py",
-        str(source_file),
-        "/another/missing/file.py",
-    ])
+    report = make_report(
+        [
+            "/nonexistent/path/missing.py",
+            str(source_file),
+            "/another/missing/file.py",
+        ]
+    )
 
     result = handler.collect(report)
 
