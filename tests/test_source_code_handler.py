@@ -38,7 +38,7 @@ def test_collect_removes_unreadable_sources_without_runtime_error():
 def test_collect_keeps_readable_sources(tmp_path):
     """Verify that readable source files are collected normally."""
     source_file = tmp_path / "real.py"
-    source_file.write_text("line1\nline2\nline3\nline4\nline5\n")
+    source_file.write_text("foobarbaz")
 
     handler = SourceCodeHandler(tab_width=4, context_line_count=1)
     report = make_report([str(source_file)])
@@ -52,7 +52,7 @@ def test_collect_keeps_readable_sources(tmp_path):
 def test_collect_mixed_readable_and_unreadable(tmp_path):
     """Mix of existing and missing files — only readable ones should survive."""
     source_file = tmp_path / "exists.py"
-    source_file.write_text("a = 1\nb = 2\n" * 10)
+    source_file.write_text("foobarbaz")
 
     handler = SourceCodeHandler(tab_width=4, context_line_count=3)
     report = make_report(
