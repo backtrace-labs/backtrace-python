@@ -1,3 +1,7 @@
+# Version 0.4.3
+
+- Fixed invalid source code behavior when the source file doesn't exist or couldn't be read (#28)
+
 # Version 0.4.2
 
 - Fixed a bug that can mark 2+ threads as a faulting thread (#26),

@@ -42,7 +42,7 @@ class SourceCodeHandler:
                 if new_max_line > source["maxLine"]:
                     source["maxLine"] = new_max_line
 
-        for source_code_path in source_code:
+        for source_code_path in list(source_code):
             source = source_code[source_code_path]
             source_code_content = self.read_source(
                 source_code_path, source["startLine"] - 1, source["maxLine"]
